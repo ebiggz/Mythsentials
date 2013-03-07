@@ -1,0 +1,55 @@
+main: com.gmail.ebiggz.plugins.mythsentials.Mythsentials
+name: Mythsentials
+version: 0.1
+author: ebiggz
+description: General purpose plugin for Mythica. 
+commands:
+    helpme:
+        description: Sends an alert to admins/mods.
+        usage: /<command> [reason]
+    modhelp:
+        description: Sends an alert to admins/mods.
+        usage: /<command> [reason]
+    adminhelp:
+        description: Sends an alert to admins/mods.
+        usage: /<command> [reason]
+    mod:
+        description: Sends an alert to admins/mods.
+        usage: /<command> [reason]
+    admin:
+        description: Sends an alert to admins/mods.
+        usage: /<command> [reason]
+    mods:
+        description: Tells you if mods are online.
+        usage: /<command>
+    admins:
+        description: Tells you if mods are online.
+        usage: /<command>
+    restool:
+        description: Gives you the res selection tool.
+        usage: /<command>
+    mythica:
+        description: Shows Mythsentials help menu.
+        usage: /<command> help    
+permissions:
+    mythica.helpsend:
+        default: false
+    mythica.helpreceive:
+        default: false
+    mythica.restool:
+        default: false
+    mythica.notnoob:
+        default: false
+    mythica.admin:
+        default: false
+    mythica.colorsigntext:
+        default: false    
+    mythica.*:
+        default: op
+        children:
+            mythica.helpsend: true
+            mythica.helpreceive: true
+            mythica.restool: true
+            mythica.notnoob: true
+            mythica.colorsigntext: true
+            mythica.admin: true
