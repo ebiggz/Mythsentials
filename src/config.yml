@@ -1,0 +1,10 @@
+# Mythsentials: Mythica's General Purpose Plugin Config
+InvincibleStuff:
+    toolRepairPoint: 99
+    armorRepairPoint: 1
+    Tools: 276,277,278,279,293,261,359
+    Armor: 302,303,304,305
+DragonData: 
+    dragonIsAlive: true
+    dragonLastKilledBy: playername
+

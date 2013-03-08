@@ -69,7 +69,7 @@ public class HelpMe implements CommandExecutor {
 					    reason = reason.substring(1);
 					    //if arguments are greater than one, combine them into one string
 		    	    	for(Player mod: plugin.getServer().getOnlinePlayers()) {    		 
-		    	    	    if(mod.hasPermission("mythica.helpreceive")) {		    
+		    	    	    if(mod.hasPermission("mythica.helpreceive")) {	
 		    	    	    	mod.sendMessage(ChatColor.RED + "[HelpMe] " + ChatColor.YELLOW + userName + ChatColor.GOLD + " needs help! Reason: " + reason);
 		    	    	    	log.severe("[HelpMe] " + userName + ": " + reason + "(Mods online)");
 		    	    	    	//notify mods that command sender needs help, with arguments string as the reason.

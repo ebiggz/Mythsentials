@@ -30,7 +30,10 @@ commands:
         usage: /<command>
     mythica:
         description: Shows Mythsentials help menu.
-        usage: /<command> help    
+        usage: /<command> help
+    dragon:
+        description: Tells player if Dragon is alive or not.
+        usage: /<command>    
 permissions:
     mythica.helpsend:
         default: false
@@ -43,6 +46,10 @@ permissions:
     mythica.admin:
         default: false
     mythica.colorsigntext:
+        default: false
+    mythica.invitools:
+        default: false
+    mythica.inviarmor:
         default: false    
     mythica.*:
         default: op
@@ -53,3 +60,5 @@ permissions:
             mythica.notnoob: true
             mythica.colorsigntext: true
             mythica.admin: true
+            mythica.invtools: true
+            mythica.invarmor: true
