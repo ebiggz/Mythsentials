@@ -30,6 +30,7 @@ public class Mythsentials extends JavaPlugin {
     public void onEnable() {
     	loadConfig();
     	getServer().getPluginManager().registerEvents(new UnregNotifier(), this);
+    	getServer().getPluginManager().registerEvents(new ColoredSignText(), this);
     	getServer().getPluginManager().registerEvents(new OnlineModNotifier(), this);
     	getServer().getPluginManager().registerEvents(new NoFallDamage(), this);
     	getServer().getPluginManager().registerEvents(bedrockbreaker, this);

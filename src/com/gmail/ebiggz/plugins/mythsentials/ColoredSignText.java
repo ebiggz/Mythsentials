@@ -9,7 +9,7 @@ import org.bukkit.event.block.SignChangeEvent;
 
  public class ColoredSignText implements Listener{
     
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignChange(SignChangeEvent event){
         Player player = event.getPlayer();
         int counter = 0;
