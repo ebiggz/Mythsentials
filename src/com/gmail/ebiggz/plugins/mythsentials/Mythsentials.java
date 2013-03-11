@@ -3,7 +3,6 @@ package com.gmail.ebiggz.plugins.mythsentials;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,6 +19,7 @@ public class Mythsentials extends JavaPlugin {
 	private final BedrockBlocker bedrockbreaker = new BedrockBlocker(this);
 	private final InvincibleTools invincabletools = new InvincibleTools(this);
 	private final DragonListener dlistener = new DragonListener(this);
+	
 	
 	private static final Logger log = Logger.getLogger("Minecraft");
     
