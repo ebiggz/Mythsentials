@@ -1,6 +1,6 @@
 main: com.gmail.ebiggz.plugins.mythsentials.Mythsentials
 name: Mythsentials
-version: 0.1
+version: 0.2
 author: ebiggz
 description: General purpose plugin for Mythica. 
 commands:

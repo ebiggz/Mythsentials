@@ -32,7 +32,6 @@ public class ConfigAccessor {
 
 	public void reloadConfig() {
 		fileConfiguration = YamlConfiguration.loadConfiguration(configFile);
-
 		// Look for defaults in the jar
 		InputStream defConfigStream = plugin.getResource(fileName);
 		if (defConfigStream != null) {

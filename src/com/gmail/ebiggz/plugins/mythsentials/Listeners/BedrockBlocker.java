@@ -12,38 +12,38 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
 
 public class BedrockBlocker implements Listener {
-	
+
 	private final Mythsentials plugin;
 
 	public BedrockBlocker(Mythsentials instance) {
 
 		plugin = instance;
 	}
-	
+
 	@EventHandler (priority = EventPriority.NORMAL)
-    public void bedrockBreak(BlockBreakEvent event) {
+	public void bedrockBreak(BlockBreakEvent event) {
 		World dreamWorld = plugin.getServer().getWorld("Creative");
 		Player player = event.getPlayer();
 		if (event.getPlayer().getWorld() != dreamWorld) {
 			return;
-			} 
+		}
 		if (event.getBlock().getType() == Material.BEDROCK) {
-			if(!(player.hasPermission("mythica.admin"))) {
+			if(!player.hasPermission("mythica.admin")) {
 				event.setCancelled(true);
-			}	
-		}	    
+			}
+		}
 	}
 	@EventHandler (priority = EventPriority.NORMAL)
-    public void bedrockPlace(BlockPlaceEvent event) {
+	public void bedrockPlace(BlockPlaceEvent event) {
 		World dreamWorld = plugin.getServer().getWorld("Creative");
 		Player player = event.getPlayer();
 		if (event.getPlayer().getWorld() != dreamWorld) {
 			return;
-			} 
+		}
 		if (event.getBlock().getType() == Material.BEDROCK) {
-			if(!(player.hasPermission("mythica.admin"))) {
+			if(!player.hasPermission("mythica.admin")) {
 				event.setCancelled(true);
-			}				
-		}	    
+			}
+		}
 	}
 }

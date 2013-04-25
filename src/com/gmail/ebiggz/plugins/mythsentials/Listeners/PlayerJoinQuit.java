@@ -1,26 +1,49 @@
 package com.gmail.ebiggz.plugins.mythsentials.Listeners;
 
-import org.bukkit.ChatColor;
+import java.util.logging.Logger;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.gmail.ebiggz.plugins.mythsentials.CmdExecutors.HelpMe;
+import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
+import com.gmail.ebiggz.plugins.mythsentials.Tools.Utils;
 
 public class PlayerJoinQuit implements Listener {
+	private static final Logger log = Logger.getLogger("Minecraft");
+
+	private final Mythsentials plugin;
+
+	public PlayerJoinQuit(Mythsentials instance) {
+		this.plugin = instance;
+	}
 
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onJoin(PlayerJoinEvent event) {
+		log.info("[Mythsentials] Running player join event");
 		Player p = event.getPlayer();
-		Boolean mods = HelpMe.modsOnline();
 		if(p.hasPermission("mythica.notnoob")) {
-			if(mods == true) {
-				p.sendMessage(ChatColor.GOLD + "Mods are " + ChatColor.GREEN + "Online" + ChatColor.GOLD + "! Type /helpme if you need us.");
-			} else {
-				p.sendMessage(ChatColor.GOLD + "Mods are " + ChatColor.RED + "Offline" + ChatColor.GOLD + ". If you need help, make an Issue on the website for mods to review as soon as they get on.");
-			}
+			Utils.modMessage(p);
+			Utils.offlineBalanceChange(p);
 		}
+	}
+
+	@EventHandler (priority = EventPriority.MONITOR)
+	public void onQuit(PlayerQuitEvent event) {
+		Player p = event.getPlayer();
+		String playerName = p.getDisplayName();
+		Mythsentials.economy.getBalance(playerName);
+		Double balance = Mythsentials.economy.getBalance(playerName);
+		if(plugin.getConfig().contains("PlayerData." + playerName + ".LogOffBal")) {
+			plugin.getConfig().set("PlayerData." + playerName + ".LogOffBal", balance);
+			plugin.saveConfig();
+			return;
+		}
+		plugin.getConfig().addDefault("PlayerData." + playerName + ".LogOffBal", balance);
+		plugin.saveConfig();
+		return;
 	}
 }
