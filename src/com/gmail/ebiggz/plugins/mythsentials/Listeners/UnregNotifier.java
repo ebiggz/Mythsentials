@@ -1,4 +1,4 @@
-package com.gmail.ebiggz.plugins.mythsentials;
+package com.gmail.ebiggz.plugins.mythsentials.Listeners;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

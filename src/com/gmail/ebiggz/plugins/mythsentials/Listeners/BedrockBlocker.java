@@ -1,4 +1,4 @@
-package com.gmail.ebiggz.plugins.mythsentials;
+package com.gmail.ebiggz.plugins.mythsentials.Listeners;
 
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -8,6 +8,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+
+import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
 
 public class BedrockBlocker implements Listener {
 	

@@ -1,4 +1,4 @@
-package com.gmail.ebiggz.plugins.mythsentials;
+package com.gmail.ebiggz.plugins.mythsentials.CmdExecutors;
 
 import java.util.logging.Logger;
 
@@ -8,8 +8,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.ChatPaginator.ChatPage;
-import org.bukkit.util.ChatPaginator;
+
+import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
 
 public class HelpMe implements CommandExecutor {
 	
