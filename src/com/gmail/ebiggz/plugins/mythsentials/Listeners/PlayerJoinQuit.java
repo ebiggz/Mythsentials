@@ -1,7 +1,5 @@
 package com.gmail.ebiggz.plugins.mythsentials.Listeners;
 
-import java.util.logging.Logger;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,7 +11,6 @@ import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
 import com.gmail.ebiggz.plugins.mythsentials.Tools.Utils;
 
 public class PlayerJoinQuit implements Listener {
-	private static final Logger log = Logger.getLogger("Minecraft");
 
 	private final Mythsentials plugin;
 
@@ -23,7 +20,6 @@ public class PlayerJoinQuit implements Listener {
 
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onJoin(PlayerJoinEvent event) {
-		log.info("[Mythsentials] Running player join event");
 		Player p = event.getPlayer();
 		if(p.hasPermission("mythica.notnoob")) {
 			Utils.modMessage(p);
