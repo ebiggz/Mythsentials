@@ -46,16 +46,11 @@ public class Mythsentials extends JavaPlugin {
 
 		PluginManager pm = getServer().getPluginManager();
 
-		log.info("[Mythsentials] Attempting to load Vault...");
 		if(!setupVault()) {
 			pm.disablePlugin(this);
 			return;
 		}
-		log.info("[Mythsentials] Vault loaded!");
-		log.info("[Mythsentials] Loading config...");
 		loadConfig();
-		log.info("[Mythsentials] Config loaded!");
-		log.info("[Mythsentials] Registering Events and commands...");
 		pm.registerEvents(new UnregNotifier(), this);
 		pm.registerEvents(new ColoredSignText(), this);
 		pm.registerEvents(new PlayerJoinQuit(this), this);

@@ -1,15 +1,11 @@
 package com.gmail.ebiggz.plugins.mythsentials.Tools;
 
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
 
 public class Utils {
-
-	private static final Logger log = Logger.getLogger("Minecraft");
 
 	public static Mythsentials plugin;
 
@@ -18,11 +14,8 @@ public class Utils {
 	}
 
 	public static Boolean modsOnline() {
-		log.info("[Mythsentials] Checking for mods...");
 		for(Player mod: plugin.getServer().getOnlinePlayers()) {
-			log.info("[Mythsentials] Looking...");
 			if(mod.hasPermission("mythica.helpreceive")) {
-				log.info("[Mythsentials] Mod found!");
 				return true;
 			}
 		}
