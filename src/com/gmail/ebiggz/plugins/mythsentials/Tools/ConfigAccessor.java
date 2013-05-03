@@ -5,29 +5,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 
 public class ConfigAccessor {
 
+	private Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Mythsentials");
 	private final String fileName;
-	private final JavaPlugin plugin;
-
 	private File configFile;
 	private FileConfiguration fileConfiguration;
 
-	public ConfigAccessor(JavaPlugin plugin, String fileName) {
+	public ConfigAccessor(String fileName) {
 		if (plugin == null)
 			throw new IllegalArgumentException("plugin cannot be null");
-		if (!plugin.isInitialized())
-			throw new IllegalArgumentException("plugin must be initiaized");
-		this.plugin = plugin;
 		this.fileName = fileName;
 		File dataFolder = plugin.getDataFolder();
 		if (dataFolder == null)
 			throw new IllegalStateException();
-		this.configFile = new File(plugin.getDataFolder(), fileName);
+		this.configFile = new File(dataFolder, fileName);
 	}
 
 	public void reloadConfig() {

@@ -8,14 +8,16 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
+import com.gmail.ebiggz.plugins.mythsentials.Tools.ConfigAccessor;
 import com.gmail.ebiggz.plugins.mythsentials.Tools.Utils;
 
 public class PlayerJoinQuit implements Listener {
 
 	private final Mythsentials plugin;
+	ConfigAccessor moneyTracCfg = new ConfigAccessor("OfflineMoneyTracking.yml");
 
-	public PlayerJoinQuit(Mythsentials instance) {
-		this.plugin = instance;
+	public PlayerJoinQuit(Mythsentials plugin) {
+		this.plugin = plugin;
 	}
 
 	@EventHandler (priority = EventPriority.MONITOR)
@@ -31,15 +33,15 @@ public class PlayerJoinQuit implements Listener {
 	public void onQuit(PlayerQuitEvent event) {
 		Player p = event.getPlayer();
 		String playerName = p.getDisplayName();
-		Mythsentials.economy.getBalance(playerName);
-		Double balance = Mythsentials.economy.getBalance(playerName);
-		if(plugin.getConfig().contains("PlayerData." + playerName + ".LogOffBal")) {
-			plugin.getConfig().set("PlayerData." + playerName + ".LogOffBal", balance);
-			plugin.saveConfig();
+		plugin.economy.getBalance(playerName);
+		Double balance = plugin.economy.getBalance(playerName);
+		if(moneyTracCfg.getConfig().contains(playerName)) {
+			moneyTracCfg.getConfig().set(playerName, balance);
+			moneyTracCfg.saveConfig();
 			return;
 		}
-		plugin.getConfig().addDefault("PlayerData." + playerName + ".LogOffBal", balance);
-		plugin.saveConfig();
+		moneyTracCfg.getConfig().addDefault(playerName, balance);
+		moneyTracCfg.saveConfig();
 		return;
 	}
 }

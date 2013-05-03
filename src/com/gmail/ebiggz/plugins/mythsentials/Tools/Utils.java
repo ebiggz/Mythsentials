@@ -7,6 +7,7 @@ import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
 
 public class Utils {
 
+
 	public static Mythsentials plugin;
 
 	public Utils(Mythsentials plugin) {
@@ -39,12 +40,13 @@ public class Utils {
 	}
 
 	public static void offlineBalanceChange(Player player) {
+		ConfigAccessor moneyTracCfg = new ConfigAccessor("OfflineMoneyTracking.yml");
 		String playerName = player.getDisplayName();
-		Double balance = Mythsentials.economy.getBalance(playerName);
-		if(plugin.getConfig().contains("PlayerData." + playerName + ".LogOffBal") == false) {
+		Double balance = plugin.economy.getBalance(playerName);
+		if(moneyTracCfg.getConfig().contains(playerName) == false) {
 			return;
 		}
-		Double previousBal = plugin.getConfig().getDouble("PlayerData." + playerName + ".LogOffBal");
+		Double previousBal = moneyTracCfg.getConfig().getDouble(playerName);
 		if(balance.equals(previousBal)) {
 			player.sendMessage(ChatColor.YELLOW + "Your bank balance did not change since you last logged off.");
 			return;

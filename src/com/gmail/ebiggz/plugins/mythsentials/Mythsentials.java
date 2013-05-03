@@ -1,5 +1,6 @@
 package com.gmail.ebiggz.plugins.mythsentials;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +24,7 @@ import com.gmail.ebiggz.plugins.mythsentials.Listeners.InvincibleTools;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.NoFallDamage;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.PlayerJoinQuit;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.UnregNotifier;
+import com.gmail.ebiggz.plugins.mythsentials.Tools.ConfigAccessor;
 import com.gmail.ebiggz.plugins.mythsentials.Tools.Utils;
 
 public class Mythsentials extends JavaPlugin {
@@ -34,7 +36,7 @@ public class Mythsentials extends JavaPlugin {
 	public String edKiller;
 	public HashMap<Integer, Boolean> tools;
 	public HashMap<Integer, Boolean> armor;
-	public static Economy economy = null;
+	public Economy economy = null;
 
 	private static final Logger log = Logger.getLogger("Minecraft");
 
@@ -51,6 +53,7 @@ public class Mythsentials extends JavaPlugin {
 			return;
 		}
 		loadConfig();
+		moneyTracConfigLoad();
 		pm.registerEvents(new UnregNotifier(), this);
 		pm.registerEvents(new ColoredSignText(), this);
 		pm.registerEvents(new PlayerJoinQuit(this), this);
@@ -124,5 +127,19 @@ public class Mythsentials extends JavaPlugin {
 		} catch (Exception e) {
 			log.log(Level.SEVERE, "Exception while loading Mythsentials/config.yml", e);
 		}
+	}
+	public void moneyTracConfigLoad() {
+
+		ConfigAccessor moneyTracConfig = new ConfigAccessor("OfflineMoneyTracking.yml");
+		String pluginFolder = this.getDataFolder().getAbsolutePath();	(new File(pluginFolder)).mkdirs();
+		File moneyTracConfigF = new File(this.getDataFolder() + File.separator + "OfflineMoneyTracking.yml");
+
+		if (!moneyTracConfigF.exists()) {
+			log.info("No OfflineMoneyTracking.yml, making one now...");
+			moneyTracConfig.saveDefaultConfig();
+			log.info("Done!");
+			return;
+		}
+		log.info("OfflineMoneyTracking.yml detected!");
 	}
 }
