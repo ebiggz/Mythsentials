@@ -16,15 +16,14 @@ public class ConfigAccessor {
 	private final String fileName;
 	private File configFile;
 	private FileConfiguration fileConfiguration;
+	private String folderPath;
 
 	public ConfigAccessor(String fileName) {
 		if (plugin == null)
 			throw new IllegalArgumentException("plugin cannot be null");
 		this.fileName = fileName;
-		File dataFolder = plugin.getDataFolder();
-		if (dataFolder == null)
-			throw new IllegalStateException();
-		this.configFile = new File(dataFolder, fileName);
+		folderPath = plugin.getDataFolder().getAbsolutePath() + File.separator + "Data";
+		configFile = new File(folderPath + File.separator + fileName);;
 	}
 
 	public void reloadConfig() {

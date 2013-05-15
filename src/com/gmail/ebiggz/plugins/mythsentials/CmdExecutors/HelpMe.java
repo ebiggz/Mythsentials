@@ -15,6 +15,7 @@ public class HelpMe implements CommandExecutor {
 
 	private static final Logger log = Logger.getLogger("Minecraft");
 
+
 	public static Mythsentials plugin;
 
 	public HelpMe(Mythsentials plugin) {
@@ -22,7 +23,6 @@ public class HelpMe implements CommandExecutor {
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-
 
 		if(commandLabel.equalsIgnoreCase("mods") || commandLabel.equalsIgnoreCase("admins")) {
 			Utils.modMessage((Player) sender);
@@ -47,7 +47,7 @@ public class HelpMe implements CommandExecutor {
 			}
 
 			if(args.length == 0) {
-				Utils.playerNotify("mythica.helprecieve", message);
+				Utils.playerNotify("mythica.helpreceive", message);
 				log.severe(userName + " needs help! (Mods online)");
 				sender.sendMessage(ChatColor.GOLD + "Moderators have been notified and will help you soon!");
 				return true;
@@ -66,7 +66,7 @@ public class HelpMe implements CommandExecutor {
 				reason = reason.substring(1);
 
 				message = message + " Reason: " + reason;
-				Utils.playerNotify("mythica.helprecieve", message);
+				Utils.playerNotify("mythica.helpreceive", message);
 				sender.sendMessage(ChatColor.GOLD + "Moderators have been notified and will help you soon!");
 				log.severe("[HelpMe] " + userName + ": " + reason + "(Mods online)");
 				return true;

@@ -13,8 +13,8 @@ import com.gmail.ebiggz.plugins.mythsentials.Tools.Utils;
 
 public class PlayerJoinQuit implements Listener {
 
-	private final Mythsentials plugin;
 	ConfigAccessor moneyTracCfg = new ConfigAccessor("OfflineMoneyTracking.yml");
+	private Mythsentials plugin;
 
 	public PlayerJoinQuit(Mythsentials plugin) {
 		this.plugin = plugin;
@@ -23,10 +23,8 @@ public class PlayerJoinQuit implements Listener {
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onJoin(PlayerJoinEvent event) {
 		Player p = event.getPlayer();
-		if(p.hasPermission("mythica.notnoob")) {
-			Utils.modMessage(p);
-			Utils.offlineBalanceChange(p);
-		}
+		Utils.offlineBalanceChange(p);
+		Utils.modMessage(p);
 	}
 
 	@EventHandler (priority = EventPriority.MONITOR)

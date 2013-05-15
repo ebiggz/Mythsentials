@@ -19,6 +19,7 @@ import com.gmail.ebiggz.plugins.mythsentials.CmdExecutors.HelpMenu;
 import com.gmail.ebiggz.plugins.mythsentials.CmdExecutors.ResTool;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.BedrockBlocker;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.ColoredSignText;
+import com.gmail.ebiggz.plugins.mythsentials.Listeners.CommandAliases;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.DragonListener;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.InvincibleTools;
 import com.gmail.ebiggz.plugins.mythsentials.Listeners.NoFallDamage;
@@ -61,6 +62,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new BedrockBlocker(this), this);
 		pm.registerEvents(new InvincibleTools(this), this);
 		pm.registerEvents(new DragonListener(this), this);
+		pm.registerEvents(new CommandAliases(), this);
 		getCommand("helpme").setExecutor(new HelpMe(this));
 		getCommand("modhelp").setExecutor(new HelpMe(this));
 		getCommand("adminhelp").setExecutor(new HelpMe(this));
