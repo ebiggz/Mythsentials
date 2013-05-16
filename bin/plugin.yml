@@ -1,9 +1,8 @@
 main: com.gmail.ebiggz.plugins.mythsentials.Mythsentials
 name: Mythsentials
-version: 0.2
+version: 1.0
 author: ebiggz
-description: General purpose plugin for Mythica.
-depends: [NotifyAPI] 
+description: General purpose plugin for Mythica. 
 commands:
     helpme:
         description: Sends an alert to admins/mods.

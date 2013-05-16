@@ -22,7 +22,7 @@ public class ConfigAccessor {
 		if (plugin == null)
 			throw new IllegalArgumentException("plugin cannot be null");
 		this.fileName = fileName;
-		folderPath = plugin.getDataFolder().getAbsolutePath() + File.separator + "Data";
+		folderPath = plugin.getDataFolder().getAbsolutePath() + File.separator + "data";
 		configFile = new File(folderPath + File.separator + fileName);;
 	}
 
@@ -57,7 +57,7 @@ public class ConfigAccessor {
 
 	public void saveDefaultConfig() {
 		if (!configFile.exists()) {
-			this.plugin.saveResource(fileName, false);
+			this.plugin.saveResource("data" + File.separator + fileName, false);
 		}
 	}
 

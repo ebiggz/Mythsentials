@@ -55,13 +55,14 @@ public class Mythsentials extends JavaPlugin {
 		}
 		loadConfig();
 		moneyTracConfigLoad();
+		loadDragonData();
 		pm.registerEvents(new UnregNotifier(), this);
 		pm.registerEvents(new ColoredSignText(), this);
 		pm.registerEvents(new PlayerJoinQuit(this), this);
 		pm.registerEvents(new NoFallDamage(), this);
 		pm.registerEvents(new BedrockBlocker(this), this);
 		pm.registerEvents(new InvincibleTools(this), this);
-		pm.registerEvents(new DragonListener(this), this);
+		pm.registerEvents(new DragonListener(), this);
 		pm.registerEvents(new CommandAliases(), this);
 		getCommand("helpme").setExecutor(new HelpMe(this));
 		getCommand("modhelp").setExecutor(new HelpMe(this));
@@ -133,8 +134,8 @@ public class Mythsentials extends JavaPlugin {
 	public void moneyTracConfigLoad() {
 
 		ConfigAccessor moneyTracConfig = new ConfigAccessor("OfflineMoneyTracking.yml");
-		String pluginFolder = this.getDataFolder().getAbsolutePath();	(new File(pluginFolder)).mkdirs();
-		File moneyTracConfigF = new File(this.getDataFolder() + File.separator + "OfflineMoneyTracking.yml");
+		String pluginFolder = this.getDataFolder().getAbsolutePath() + File.separator + "data";	(new File(pluginFolder)).mkdirs();
+		File moneyTracConfigF = new File(pluginFolder + File.separator + "OfflineMoneyTracking.yml");
 
 		if (!moneyTracConfigF.exists()) {
 			log.info("No OfflineMoneyTracking.yml, making one now...");
@@ -143,5 +144,19 @@ public class Mythsentials extends JavaPlugin {
 			return;
 		}
 		log.info("OfflineMoneyTracking.yml detected!");
+	}
+	public void loadDragonData() {
+
+		ConfigAccessor dragonData = new ConfigAccessor("dragon.yml");
+		String pluginFolder = this.getDataFolder().getAbsolutePath() + File.separator + "data";	(new File(pluginFolder)).mkdirs();
+		File dragonDataF = new File(pluginFolder + File.separator + "dragon.yml");
+
+		if (!dragonDataF.exists()) {
+			log.info("No dragon.yml, making one now...");
+			dragonData.saveDefaultConfig();
+			log.info("Done!");
+			return;
+		}
+		log.info("dragon.yml detected!");
 	}
 }

@@ -9,6 +9,7 @@ import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Entity;
 
 import com.gmail.ebiggz.plugins.mythsentials.Mythsentials;
+import com.gmail.ebiggz.plugins.mythsentials.Tools.ConfigAccessor;
 import com.gmail.ebiggz.plugins.mythsentials.Tools.Time;
 
 public class DragonChecker implements CommandExecutor {
@@ -19,12 +20,13 @@ public class DragonChecker implements CommandExecutor {
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+		ConfigAccessor dragonData = new ConfigAccessor("dragon.yml");
 		if(commandLabel.equalsIgnoreCase("dragon")) {
 			if(dragonCheck() == true) {
 				sender.sendMessage(ChatColor.GOLD + "The dragon is " + ChatColor.GREEN +"alive" + ChatColor.GOLD + "!");
 			} else {
-				String killer = plugin.getConfig().getString("DragonData.dragonLastKilledBy");
-				String dragonDeathTime = plugin.getConfig().getString("DragonData.deathTime");
+				String killer = dragonData.getConfig().getString("DragonData.dragonLastKilledBy");
+				String dragonDeathTime = dragonData.getConfig().getString("DragonData.deathTime");
 				if(killer.equalsIgnoreCase("playername")) {
 					sender.sendMessage(ChatColor.GOLD + "The dragon is " + ChatColor.RED +"dead" + ChatColor.GOLD + ".");
 					return true;
