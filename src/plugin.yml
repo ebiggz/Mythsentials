@@ -1,7 +1,8 @@
-main: com.gmail.ebiggz.plugins.mythsentials.Mythsentials
+main: com.mythicacraft.plugins.mythsentials.Mythsentials
 name: Mythsentials
-version: 1.0
+version: 2.0
 author: ebiggz
+authors: [rockjolt375]
 description: General purpose plugin for Mythica. 
 commands:
     helpme:
@@ -33,7 +34,29 @@ commands:
         usage: /<command> help
     dragon:
         description: Tells player if Dragon is alive or not.
-        usage: /<command>    
+        usage: /<command> 
+    playerinfo:
+        description: Mod command for viewing player info.
+        useage: /<command> [playername]
+    compass:
+        description: Set your compass target.
+        aliases: c
+        useage: /<command>
+    register:
+        description: Allows users to enter email and password.
+        usage: /<command>
+    reg:
+        description: Allows users to enter email and password.
+        usage: /<command>
+    confirm:
+        description: Used for confirming registration information.
+        usage: /<command>
+    cancel:
+        description: Used for cancelling registration.
+        usage: /<command>
+    mythicatest:
+        description: Used for testing stuff.
+        usage: /<command>     
 permissions:
     mythica.helpsend:
         default: false
@@ -41,24 +64,30 @@ permissions:
         default: false
     mythica.restool:
         default: false
-    mythica.notnoob:
+    mythica.registered:
         default: false
     mythica.admin:
+        default: false
+    mythica.mod:
         default: false
     mythica.colorsigntext:
         default: false
     mythica.invitools:
         default: false
     mythica.inviarmor:
-        default: false    
+        default: false
+    mythica.test:
+        default: op     
     mythica.*:
         default: op
         children:
             mythica.helpsend: true
             mythica.helpreceive: true
             mythica.restool: true
-            mythica.notnoob: true
+            mythica.registered: true
             mythica.colorsigntext: true
             mythica.admin: true
+            mythica.mod: true
             mythica.invtools: true
             mythica.invarmor: true
+            mythica.test: true
