@@ -2,7 +2,7 @@ main: com.mythicacraft.plugins.mythsentials.Mythsentials
 name: Mythsentials
 version: 2.0
 author: ebiggz
-authors: [rockjolt375]
+authors: [ebiggz, rockjolt375]
 description: General purpose plugin for Mythica. 
 commands:
     helpme:
