@@ -67,7 +67,7 @@ public class CompassTarget implements CommandExecutor {
 			}
 			if(args.length >= 1) {
 				if(numberCheck(args[0])) {
-					helpPage.setFooter(commandLabel);
+					helpPage.setFooter(commandLabel  + " NEXTPAGE");
 					try {
 						int pageNumber = Integer.parseInt(args[0]);
 						if(pageNumber <= helpPage.pageTotal()) {
@@ -81,7 +81,7 @@ public class CompassTarget implements CommandExecutor {
 					return true;
 				}
 				if(args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
-					helpPage.setFooter(commandLabel + " " + args[0]);
+					helpPage.setFooter(commandLabel + " " + args[0] + " NEXTPAGE");
 					if(args.length >= 2) {
 						try {
 							int pageNumber = Integer.parseInt(args[1]);
@@ -168,6 +168,7 @@ public class CompassTarget implements CommandExecutor {
 
 					Paginate tarPages = new Paginate(sb.toString());
 					tarPages.setHeader("Compass Target Names");
+					tarPages.setFooter(commandLabel + " " + args[0]  + " NEXTPAGE");
 
 					if(args.length >= 2) {
 						try {

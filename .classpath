@@ -2,11 +2,13 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.4.7-R1.0.jar"/>
-	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Vault.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/PermissionsEx.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Herochat.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Residence.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Vault.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/VanishNoPacket.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.6.2-R0.2-20130804.060115-2.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/JSONAPI.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/SpirebotIRC.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

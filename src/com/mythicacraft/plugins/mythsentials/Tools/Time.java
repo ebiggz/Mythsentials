@@ -25,9 +25,14 @@ public class Time {
 		return time;
 	}
 
+	public static long timeInMillis() {
+		// you may need more advanced logic here when parsing the time if some times have am/pm and others don't.
+		Calendar cal = Calendar.getInstance();
+		return cal.getTimeInMillis();
+	}
+
 	public static String getTimeinMills() {
 		Calendar cal = Calendar.getInstance();
-		cal.getTime();
 		SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy h:mm a", Locale.ENGLISH);
 		String time = sdf.format(cal.getTime());
 		return time;
@@ -112,6 +117,13 @@ public class Time {
 	public static String dateFromMills(Long milliseconds) {
 		Date dateFromMills = new Date(milliseconds);
 		DateFormat df = new SimpleDateFormat("MMM d, yyyy");
+		String date = df.format(dateFromMills);
+		return date;
+	}
+
+	public static String dateAndTimeFromMills(Long milliseconds) {
+		Date dateFromMills = new Date(milliseconds);
+		DateFormat df = new SimpleDateFormat("M/d/yy h:mm a");
 		String date = df.format(dateFromMills);
 		return date;
 	}

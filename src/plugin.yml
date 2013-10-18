@@ -1,9 +1,10 @@
 main: com.mythicacraft.plugins.mythsentials.Mythsentials
 name: Mythsentials
-version: 2.0
+version: 2.2
 author: ebiggz
-authors: [ebiggz, rockjolt375]
+authors: [rockjolt375]
 description: General purpose plugin for Mythica. 
+depend: [JSONAPI]
 commands:
     helpme:
         description: Sends an alert to admins/mods.
@@ -38,6 +39,12 @@ commands:
     playerinfo:
         description: Mod command for viewing player info.
         useage: /<command> [playername]
+    deathdrops:
+        description: Mod command for viewing player death drops.
+        useage: /<command> [playername]
+    loginlocation:
+        description: Mod command for setting player login location.
+        useage: /<command> [playername]
     compass:
         description: Set your compass target.
         aliases: c
@@ -53,6 +60,9 @@ commands:
         usage: /<command>
     cancel:
         description: Used for cancelling registration.
+        usage: /<command>
+    pet:
+        description: Used for pet commands.
         usage: /<command>
     mythicatest:
         description: Used for testing stuff.

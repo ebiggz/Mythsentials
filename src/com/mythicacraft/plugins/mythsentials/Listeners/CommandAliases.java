@@ -31,6 +31,12 @@ public class CommandAliases implements Listener {
 			return;
 		}
 
+		if(command.contains("/tell")) {
+			String newCommand = command.replace("/tell", "/msg");
+			event.setMessage(newCommand);
+			return;
+		}
+
 		if(command.equalsIgnoreCase("/res tool")) {
 			String newCommand = "/restool";
 			event.setMessage(newCommand);

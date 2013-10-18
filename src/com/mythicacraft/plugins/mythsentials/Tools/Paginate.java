@@ -33,7 +33,8 @@ public class Paginate {
 
 		if(pageNumber < pageTotal()) { //if page number is less than total, include this footer
 			int nextPage = pageNumber + 1;
-			sender.sendMessage(ChatColor.GOLD + "Type \"/" + footer + " " + nextPage + "\" for next page.");
+			footer = footer.replaceAll("NEXTPAGE", Integer.toString(nextPage));
+			sender.sendMessage(ChatColor.GOLD + "Type \"/" + footer + "\" for next page.");
 		}
 	}
 

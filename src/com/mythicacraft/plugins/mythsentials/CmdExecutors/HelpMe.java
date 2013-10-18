@@ -9,12 +9,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
+import com.mythicacraft.plugins.mythsentials.Tools.NotificationStreamMessage;
 import com.mythicacraft.plugins.mythsentials.Tools.Utils;
 
 public class HelpMe implements CommandExecutor {
 
 	private static final Logger log = Logger.getLogger("Minecraft");
-
 
 	public static Mythsentials plugin;
 
@@ -38,18 +38,18 @@ public class HelpMe implements CommandExecutor {
 
 			String userName = sender.getName();
 			Boolean mods = Utils.modsOnline();
-			String message = ChatColor.RED + "[HelpMe] " + ChatColor.YELLOW + userName + ChatColor.GOLD + " needs help!";
+			String message = " needs help!";
 
 			if(mods == false) {
-				sender.sendMessage(ChatColor.GOLD + "We're sorry, unfortunately there isn't any moderators on at the moment. You can make an issue on our website and our staff will review it as soon as they get on.");
+				messageMods(userName, message);
+				sender.sendMessage(ChatColor.GOLD + "We're sorry, unfortunately there isn't any staff available at the moment. You can make an issue on our website and our staff will review it as soon as they get on.");
 				log.severe(userName + " needs help! (No Mods online!)");
 				return true;
 			}
 
 			if(args.length == 0) {
-				Utils.playerNotify("mythica.helpreceive", message);
-				log.severe(userName + " needs help! (Mods online)");
-				sender.sendMessage(ChatColor.GOLD + "Moderators have been notified and will help you soon!");
+				messageMods(userName, message);
+				sender.sendMessage(ChatColor.GOLD + "Available staff have been notified and will help you soon!");
 				return true;
 			}
 
@@ -66,13 +66,17 @@ public class HelpMe implements CommandExecutor {
 				reason = reason.substring(1);
 
 				message = message + " Reason: " + reason;
-				Utils.playerNotify("mythica.helpreceive", message);
-				sender.sendMessage(ChatColor.GOLD + "Moderators have been notified and will help you soon!");
-				log.severe("[HelpMe] " + userName + ": " + reason + "(Mods online)");
+				messageMods(userName, message);
+				sender.sendMessage(ChatColor.GOLD + "Available staff have been notified and will help you soon!");
 				return true;
 			}
 		}
 		return false;
+	}
+
+	void messageMods(String player, String message) {
+		Mythsentials.notificationStream.addMessage(new NotificationStreamMessage("helpme", player, message));
+		Utils.playerNotify("mythica.helpreceive",  ChatColor.RED + "[HelpMe] " + ChatColor.YELLOW + player + ChatColor.GOLD + message);
 	}
 }
 

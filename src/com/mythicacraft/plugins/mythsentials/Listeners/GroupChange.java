@@ -27,7 +27,13 @@ public class GroupChange implements Listener {
 					Player p = Bukkit.getPlayerExact(user.getName());
 					if(p == null) return;
 					if(p.isOnline()) {
-						p.sendMessage(ChatColor.AQUA + "Congrats " + p.getDisplayName() + ", you are now a member! " + ChatColor.GREEN + "\nGrab some food at the Spire farms and look at our map online to find a place to start your new adventure. Check out our wiki for more details! ");
+						p.sendMessage(ChatColor.AQUA + "Congrats " + p.getDisplayName() + ", you are now a member! " + ChatColor.AQUA + "\nGrab some food at the Spire farms and look at our map online to find a place to start your new adventure. Check out our wiki for more details! ");
+						p.performCommand("ch g");
+						Player[] onlinePs = Bukkit.getOnlinePlayers();
+						for(int x = 0; x < onlinePs.length; x++) {
+							if(onlinePs[x] == p) continue;
+							onlinePs[x].sendMessage(ChatColor.YELLOW + p.getDisplayName() +" is now a member of Mythica. Welcome!");
+						}
 					}
 				}
 			}
