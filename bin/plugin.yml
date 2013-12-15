@@ -33,6 +33,9 @@ commands:
     mythica:
         description: Shows Mythsentials help menu.
         usage: /<command> help
+    spirebot:
+        description: Shows Spirebot ?commands.
+        usage: /<command> 
     dragon:
         description: Tells player if Dragon is alive or not.
         usage: /<command> 
@@ -66,7 +69,10 @@ commands:
         usage: /<command>
     mythicatest:
         description: Used for testing stuff.
-        usage: /<command>     
+        usage: /<command>
+    resmax:
+        description: Select a max res size.
+        usage: /<command>   
 permissions:
     mythica.helpsend:
         default: false

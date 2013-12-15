@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
+import com.mythicacraft.plugins.mythsentials.admintools.DeathDrops;
 
 public class Utils {
 

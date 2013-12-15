@@ -43,6 +43,12 @@ public class CommandAliases implements Listener {
 			return;
 		}
 
+		if(command.equalsIgnoreCase("/res select max")) {
+			String newCommand = "/resmax";
+			event.setMessage(newCommand);
+			return;
+		}
+
 		if(command.equalsIgnoreCase("/sync")) {
 			String newCommand = "/cbsync";
 			event.setMessage(newCommand);

@@ -12,8 +12,7 @@ public class Paginate {
 	private String header = "Pages";
 	private String footer = "command";
 
-	public Paginate() {
-	}
+	public Paginate() {}
 
 	public Paginate(String paginateString) {
 		this.paginateString = paginateString;
@@ -22,6 +21,12 @@ public class Paginate {
 	public Paginate(String paginateString, String header) {
 		this.paginateString = paginateString;
 		this.header = header;
+	}
+
+	public Paginate(String paginateString, String header, String footer) {
+		this.paginateString = paginateString;
+		this.header = header;
+		this.footer = footer;
 	}
 
 	public void sendPage(int pageNumber, CommandSender sender) {

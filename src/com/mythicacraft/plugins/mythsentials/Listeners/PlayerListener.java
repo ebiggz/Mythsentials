@@ -22,10 +22,10 @@ import org.bukkit.inventory.meta.BookMeta;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.DeathDrops;
-import com.mythicacraft.plugins.mythsentials.Tools.NotificationStreamMessage;
 import com.mythicacraft.plugins.mythsentials.Tools.Time;
 import com.mythicacraft.plugins.mythsentials.Tools.Utils;
+import com.mythicacraft.plugins.mythsentials.admintools.DeathDrops;
+import com.mythicacraft.plugins.mythsentials.jsonapi.NotificationStreamMessage;
 
 public class PlayerListener implements Listener {
 

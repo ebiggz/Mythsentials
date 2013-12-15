@@ -20,40 +20,42 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.alecgorge.minecraft.jsonapi.JSONAPI;
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.AdminTools;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.CmdProcessor;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.CmdProperties;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.CompassTarget;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.DragonChecker;
 import com.mythicacraft.plugins.mythsentials.CmdExecutors.HelpMe;
 import com.mythicacraft.plugins.mythsentials.CmdExecutors.HelpMenu;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.PetCmds;
 import com.mythicacraft.plugins.mythsentials.CmdExecutors.Registration;
+import com.mythicacraft.plugins.mythsentials.CmdExecutors.ResMax;
 import com.mythicacraft.plugins.mythsentials.CmdExecutors.ResTool;
 import com.mythicacraft.plugins.mythsentials.CmdExecutors.TestCmds;
 import com.mythicacraft.plugins.mythsentials.Listeners.BedrockBlocker;
 import com.mythicacraft.plugins.mythsentials.Listeners.BoatListener;
-import com.mythicacraft.plugins.mythsentials.Listeners.ChannelChat;
 import com.mythicacraft.plugins.mythsentials.Listeners.ChatListener;
 import com.mythicacraft.plugins.mythsentials.Listeners.ColoredSignText;
 import com.mythicacraft.plugins.mythsentials.Listeners.CommandAliases;
-import com.mythicacraft.plugins.mythsentials.Listeners.DragonListener;
 import com.mythicacraft.plugins.mythsentials.Listeners.GroupChange;
 import com.mythicacraft.plugins.mythsentials.Listeners.InvincibleTools;
 import com.mythicacraft.plugins.mythsentials.Listeners.NoFallDamage;
-import com.mythicacraft.plugins.mythsentials.Listeners.PetSelectListener;
 import com.mythicacraft.plugins.mythsentials.Listeners.PlayerListener;
 import com.mythicacraft.plugins.mythsentials.Listeners.UnleashListener;
 import com.mythicacraft.plugins.mythsentials.Listeners.UnregNotifier;
-import com.mythicacraft.plugins.mythsentials.Tools.AppCommuncatior;
 import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.HerochatJSONHandler;
-import com.mythicacraft.plugins.mythsentials.Tools.JsonStream;
-import com.mythicacraft.plugins.mythsentials.Tools.ResidenceJSONHandler;
 import com.mythicacraft.plugins.mythsentials.Tools.Utils;
+import com.mythicacraft.plugins.mythsentials.admintools.AdminTools;
+import com.mythicacraft.plugins.mythsentials.compass.CompassTarget;
+import com.mythicacraft.plugins.mythsentials.dragon.DragonChecker;
+import com.mythicacraft.plugins.mythsentials.dragon.DragonListener;
+import com.mythicacraft.plugins.mythsentials.jsonapi.AppCommuncatior;
+import com.mythicacraft.plugins.mythsentials.jsonapi.ChannelChat;
+import com.mythicacraft.plugins.mythsentials.jsonapi.HerochatJSONHandler;
+import com.mythicacraft.plugins.mythsentials.jsonapi.JsonStream;
+import com.mythicacraft.plugins.mythsentials.jsonapi.ResidenceJSONHandler;
+import com.mythicacraft.plugins.mythsentials.pets.CmdProcessor;
+import com.mythicacraft.plugins.mythsentials.pets.CmdProperties;
+import com.mythicacraft.plugins.mythsentials.pets.PetCmds;
+import com.mythicacraft.plugins.mythsentials.pets.PetSelectListener;
 
 public class Mythsentials extends JavaPlugin {
 
+	//ton of class and plugin vars
 	FileConfiguration newConfig;
 	public Integer toolRepairPoint;
 	public Integer armorRepairPoint;
@@ -84,25 +86,34 @@ public class Mythsentials extends JavaPlugin {
 
 		PluginManager pm = getServer().getPluginManager();
 
+		//make sure vault is installed
 		if(!setupVault()) {
+			//disable if not
 			pm.disablePlugin(this);
 			return;
 		}
+		//make sure jsonapi is installed
 		Plugin jsonAPI = this.getServer().getPluginManager().getPlugin("JSONAPI");
 		if(jsonAPI == null) {
+			//disable if not
 			pm.disablePlugin(this);
 		} else {
 			jsonapi = (JSONAPI)jsonAPI;
 		}
+
+		//load flat files
 		loadConfig();
 		loadPlayerData();
 		loadDragonData();
+
+		//initiate json streams and api's
 		jsonapi.getStreamManager().registerStream("herochat", herochatStream);
 		jsonapi.getStreamManager().registerStream("notifications", notificationStream);
 		jsonapi.getStreamManager().registerStream("irc", ircStream);
-		jsonapi.registerAPICallHandler(new HerochatJSONHandler(this));
-		jsonapi.registerAPICallHandler(new ResidenceJSONHandler(this));
+		jsonapi.registerAPICallHandler(new HerochatJSONHandler());
+		jsonapi.registerAPICallHandler(new ResidenceJSONHandler());
 
+		//register all the listeners
 		pm.registerEvents(new UnregNotifier(), this);
 		pm.registerEvents(new BoatListener(), this);
 		pm.registerEvents(new ColoredSignText(), this);
@@ -118,45 +129,51 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new PetSelectListener(), this);
 		pm.registerEvents(new ChannelChat(), this);
 
+		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
 		getCommand("reg").setExecutor(new Registration(this));
 		getCommand("confirm").setExecutor(new Registration(this));
 		getCommand("cancel").setExecutor(new Registration(this));
-		getCommand("helpme").setExecutor(new HelpMe(this));
+		getCommand("helpme").setExecutor(new HelpMe());
 		getCommand("playerinfo").setExecutor(new AdminTools());
 		getCommand("deathdrops").setExecutor(new AdminTools());
 		getCommand("loginlocation").setExecutor(new AdminTools());
 		getCommand("compass").setExecutor(new CompassTarget(this));
-		getCommand("modhelp").setExecutor(new HelpMe(this));
-		getCommand("adminhelp").setExecutor(new HelpMe(this));
-		getCommand("mod").setExecutor(new HelpMe(this));
-		getCommand("admin").setExecutor(new HelpMe(this));
-		getCommand("mods").setExecutor(new HelpMe(this));
-		getCommand("admins").setExecutor(new HelpMe(this));
+		getCommand("modhelp").setExecutor(new HelpMe());
+		getCommand("adminhelp").setExecutor(new HelpMe());
+		getCommand("mod").setExecutor(new HelpMe());
+		getCommand("admin").setExecutor(new HelpMe());
+		getCommand("mods").setExecutor(new HelpMe());
+		getCommand("admins").setExecutor(new HelpMe());
 		getCommand("restool").setExecutor(new ResTool());
 		getCommand("mythica").setExecutor(new HelpMenu());
+		getCommand("spirebot").setExecutor(new HelpMenu());
+		getCommand("resmax").setExecutor(new ResMax());
 		getCommand("mythicatest").setExecutor(new TestCmds());
 		getCommand("dragon").setExecutor(new DragonChecker(this));
 		getCommand("pet").setExecutor(new PetCmds());
 
+		//initiate a copy of the utils class and the cmdprocessor class (used for pet commands)
 		new Utils(this);
 		new CmdProcessor();
 
+		//start thread to talk to connected desktop client
 		Thread appCommun = new AppCommuncatior();
 		appCommun.start();
 
+		//finished
 		log.info("[Mythsentials] Enabled!");
 	}
 
 	private boolean setupVault() {
 		Plugin vault =  getServer().getPluginManager().getPlugin("Vault");
-		if (vault != null && vault instanceof net.milkbowl.vault.Vault) {
+		if (vault != null && vault instanceof net.milkbowl.vault.Vault) { //first check that vault exists
 			log.info("[Mythsentials] Hooked into Vault v" + vault.getDescription().getVersion());
-			if(!setupEconomy()) {
+			if(!setupEconomy()) { //check for econ plugin
 				log.severe("[Mythsentials] No permissions plugin to handle cash!");
 				return false;
 			}
-			if(!setupChat()) {
+			if(!setupChat()) { //check for plugin to handle chat stuff
 				log.severe("[Mythsentials] No chat plugin to handle prefix/suffix!");
 				return false;
 			}
@@ -184,7 +201,7 @@ public class Mythsentials extends JavaPlugin {
 		return (chat != null);
 	}
 
-	public void loadConfig() {
+	public void loadConfig() { //load main config
 		try {
 			reloadConfig();
 			newConfig = this.getConfig();
@@ -214,6 +231,7 @@ public class Mythsentials extends JavaPlugin {
 			log.log(Level.SEVERE, "Exception while loading Mythsentials/config.yml", e);
 		}
 	}
+
 	public void loadPlayerData() {
 
 		ConfigAccessor playerData = new ConfigAccessor("players.yml");
@@ -228,6 +246,7 @@ public class Mythsentials extends JavaPlugin {
 		}
 		log.info("players.yml detected!");
 	}
+
 	public void loadDragonData() {
 
 		ConfigAccessor dragonData = new ConfigAccessor("dragon.yml");

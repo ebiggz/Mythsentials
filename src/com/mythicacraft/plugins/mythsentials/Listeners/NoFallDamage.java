@@ -11,9 +11,7 @@ public class NoFallDamage implements Listener {
 
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (!(event.getEntity() instanceof Player))
-			return;
-		if (event.getCause() == DamageCause.FALL) {
+		if (event.getEntity() instanceof Player && event.getCause() == DamageCause.FALL) {
 			event.setCancelled(true);
 		}
 	}

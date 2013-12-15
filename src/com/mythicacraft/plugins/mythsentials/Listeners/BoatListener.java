@@ -18,25 +18,11 @@ public class BoatListener implements Listener
 	{
 		if(event.getVehicle().getType().equals(EntityType.BOAT))
 		{
-			if(event.getAttacker() != null)
-			{
-				if(event.getAttacker().getType() != EntityType.PLAYER)
-				{
-					event.setCancelled(true);
-					Location vLoc = event.getVehicle().getLocation();
-					World realm = vLoc.getWorld();
-					event.getVehicle().remove();
-					realm.dropItem(vLoc, new ItemStack(Material.BOAT));
-				}
-			}
-			else
-			{
-				event.setCancelled(true);
-				Location vLoc = event.getVehicle().getLocation();
-				World realm = vLoc.getWorld();
-				event.getVehicle().remove();
-				realm.dropItem(vLoc, new ItemStack(Material.BOAT));
-			}
+			event.setCancelled(true);
+			Location vLoc = event.getVehicle().getLocation();
+			World realm = vLoc.getWorld();
+			event.getVehicle().remove();
+			realm.dropItem(vLoc, new ItemStack(Material.BOAT));
 		}
 	}
 }
