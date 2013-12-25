@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.dragon;
+package com.mythicacraft.plugins.mythsentials.Dragon;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -9,8 +9,8 @@ import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Entity;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
-import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.Time;
+import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
+import com.mythicacraft.plugins.mythsentials.Utilities.Time;
 
 public class DragonChecker implements CommandExecutor {
 	private final Mythsentials plugin;

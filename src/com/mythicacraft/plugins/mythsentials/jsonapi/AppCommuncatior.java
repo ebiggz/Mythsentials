@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.jsonapi;
+package com.mythicacraft.plugins.mythsentials.JsonAPI;
 
 import java.io.BufferedReader;
 import java.io.IOException;

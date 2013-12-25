@@ -1,7 +1,17 @@
 package com.mythicacraft.plugins.mythsentials;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -9,7 +19,9 @@ import java.util.logging.Logger;
 
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -20,39 +32,42 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.alecgorge.minecraft.jsonapi.JSONAPI;
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.HelpMe;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.HelpMenu;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.Registration;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.ResMax;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.ResTool;
-import com.mythicacraft.plugins.mythsentials.CmdExecutors.TestCmds;
-import com.mythicacraft.plugins.mythsentials.Listeners.BedrockBlocker;
-import com.mythicacraft.plugins.mythsentials.Listeners.BoatListener;
-import com.mythicacraft.plugins.mythsentials.Listeners.ChatListener;
-import com.mythicacraft.plugins.mythsentials.Listeners.ColoredSignText;
-import com.mythicacraft.plugins.mythsentials.Listeners.CommandAliases;
-import com.mythicacraft.plugins.mythsentials.Listeners.GroupChange;
-import com.mythicacraft.plugins.mythsentials.Listeners.InvincibleTools;
-import com.mythicacraft.plugins.mythsentials.Listeners.NoFallDamage;
-import com.mythicacraft.plugins.mythsentials.Listeners.PlayerListener;
-import com.mythicacraft.plugins.mythsentials.Listeners.UnleashListener;
-import com.mythicacraft.plugins.mythsentials.Listeners.UnregNotifier;
-import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.Utils;
-import com.mythicacraft.plugins.mythsentials.admintools.AdminTools;
-import com.mythicacraft.plugins.mythsentials.compass.CompassTarget;
-import com.mythicacraft.plugins.mythsentials.dragon.DragonChecker;
-import com.mythicacraft.plugins.mythsentials.dragon.DragonListener;
-import com.mythicacraft.plugins.mythsentials.jsonapi.AppCommuncatior;
-import com.mythicacraft.plugins.mythsentials.jsonapi.ChannelChat;
-import com.mythicacraft.plugins.mythsentials.jsonapi.HerochatJSONHandler;
-import com.mythicacraft.plugins.mythsentials.jsonapi.JsonStream;
-import com.mythicacraft.plugins.mythsentials.jsonapi.ResidenceJSONHandler;
-import com.mythicacraft.plugins.mythsentials.pets.CmdProcessor;
-import com.mythicacraft.plugins.mythsentials.pets.CmdProperties;
-import com.mythicacraft.plugins.mythsentials.pets.PetCmds;
-import com.mythicacraft.plugins.mythsentials.pets.PetSelectListener;
-
+import com.mythicacraft.plugins.mythsentials.AdminTools.AdminTools;
+import com.mythicacraft.plugins.mythsentials.Affixer.AffixerCmds;
+import com.mythicacraft.plugins.mythsentials.Compass.CompassTarget;
+import com.mythicacraft.plugins.mythsentials.Dragon.DragonChecker;
+import com.mythicacraft.plugins.mythsentials.Dragon.DragonListener;
+import com.mythicacraft.plugins.mythsentials.JsonAPI.AppCommuncatior;
+import com.mythicacraft.plugins.mythsentials.JsonAPI.ChannelChat;
+import com.mythicacraft.plugins.mythsentials.JsonAPI.HerochatJSONHandler;
+import com.mythicacraft.plugins.mythsentials.JsonAPI.JsonStream;
+import com.mythicacraft.plugins.mythsentials.JsonAPI.ResidenceJSONHandler;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.HelpMe;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.HelpMenu;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.Registration;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.ResMax;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.ResTool;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.TestCmds;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.BedrockBlocker;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.BoatListener;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.ChatListener;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.ColoredSignText;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.CommandAliases;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.GroupChange;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.InvincibleTools;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.NoFallDamage;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.PlayerListener;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.UnleashListener;
+import com.mythicacraft.plugins.mythsentials.MiscListeners.UnregNotifier;
+import com.mythicacraft.plugins.mythsentials.Pets.PetCmdProperties;
+import com.mythicacraft.plugins.mythsentials.Pets.PetCmds;
+import com.mythicacraft.plugins.mythsentials.Pets.PetSelectListener;
+import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCBot;
+import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCCommands;
+import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCEventListener;
+import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
+import com.mythicacraft.plugins.mythsentials.Utilities.JarUtils;
+import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 public class Mythsentials extends JavaPlugin {
 
 	//ton of class and plugin vars
@@ -67,9 +82,10 @@ public class Mythsentials extends JavaPlugin {
 	public final HashMap<Player, String> emailHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> passHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> taskIDHash = new HashMap<Player, String>();
-	public static HashMap<Player,CmdProperties> petSelector = new HashMap<Player,CmdProperties>();
+	public static HashMap<Player,PetCmdProperties> petSelector = new HashMap<Player,PetCmdProperties>();
 	public Economy economy = null;
-	public Chat chat = null;
+	public static Chat chat = null;
+	public static Permission permission = null;
 	private JSONAPI jsonapi;
 	public static JSONAPIStream notificationStream = new JsonStream("notifications");
 	public static JSONAPIStream herochatStream = new JsonStream("herochat");
@@ -77,6 +93,7 @@ public class Mythsentials extends JavaPlugin {
 	public static HashSet<PrintWriter> clients = new HashSet<PrintWriter>();
 
 	private static final Logger log = Logger.getLogger("Minecraft");
+	private static JavaPlugin plugin;
 
 	public void onDisable() {
 		log.info("[Mythsentials] Disabled!");
@@ -85,6 +102,8 @@ public class Mythsentials extends JavaPlugin {
 	public void onEnable() {
 
 		PluginManager pm = getServer().getPluginManager();
+
+		plugin = this;
 
 		//make sure vault is installed
 		if(!setupVault()) {
@@ -105,6 +124,11 @@ public class Mythsentials extends JavaPlugin {
 		loadConfig();
 		loadPlayerData();
 		loadDragonData();
+		loadPircbotLib();
+		loadIRCLogFile();
+
+		//make irc spirebot
+		IRCBot.makeBot();
 
 		//initiate json streams and api's
 		jsonapi.getStreamManager().registerStream("herochat", herochatStream);
@@ -128,6 +152,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new ChatListener(), this);
 		pm.registerEvents(new PetSelectListener(), this);
 		pm.registerEvents(new ChannelChat(), this);
+		pm.registerEvents(new IRCEventListener(), this);
 
 		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
@@ -152,10 +177,18 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("mythicatest").setExecutor(new TestCmds());
 		getCommand("dragon").setExecutor(new DragonChecker(this));
 		getCommand("pet").setExecutor(new PetCmds());
+		getCommand("affixer").setExecutor(new AffixerCmds());
+		getCommand("colors").setExecutor(new AffixerCmds());
+		getCommand("formats").setExecutor(new AffixerCmds());
+		getCommand("prefix").setExecutor(new AffixerCmds());
+		getCommand("suffix").setExecutor(new AffixerCmds());
+		getCommand("color").setExecutor(new AffixerCmds());
+		getCommand("colornames").setExecutor(new AffixerCmds());
+		getCommand("colorname").setExecutor(new AffixerCmds());
+		getCommand("irc").setExecutor(new IRCCommands());
 
-		//initiate a copy of the utils class and the cmdprocessor class (used for pet commands)
+		//initiate the utils class
 		new Utils(this);
-		new CmdProcessor();
 
 		//start thread to talk to connected desktop client
 		Thread appCommun = new AppCommuncatior();
@@ -175,6 +208,10 @@ public class Mythsentials extends JavaPlugin {
 			}
 			if(!setupChat()) { //check for plugin to handle chat stuff
 				log.severe("[Mythsentials] No chat plugin to handle prefix/suffix!");
+				return false;
+			}
+			if(!setupPermission()) { //check for plugin to handle permissons
+				log.severe("[Mythsentials] No chat plugin to handle permissons!");
 				return false;
 			}
 		} else {
@@ -199,6 +236,14 @@ public class Mythsentials extends JavaPlugin {
 			chat = chatProvider.getProvider();
 		}
 		return (chat != null);
+	}
+
+	public boolean setupPermission() {
+		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+		if (permissionProvider != null) {
+			permission = permissionProvider.getProvider();
+		}
+		return (permission != null);
 	}
 
 	public void loadConfig() { //load main config
@@ -260,5 +305,77 @@ public class Mythsentials extends JavaPlugin {
 			return;
 		}
 		log.info("dragon.yml detected!");
+	}
+
+	public void loadPircbotLib() {
+		try {
+			final File[] libs = new File[] {
+					new File(getDataFolder(), "pircbot.jar")};
+			for (final File lib : libs) {
+				if (!lib.exists()) {
+					JarUtils.extractFromJar(lib.getName(),
+							lib.getAbsolutePath());
+				}
+			}
+			for (final File lib : libs) {
+				if (!lib.exists()) {
+					getLogger().warning(
+							"There was a critical error loading Mythsentials! Could not find lib: "
+									+ lib.getName());
+					Bukkit.getServer().getPluginManager().disablePlugin(this);
+					return;
+				}
+				addClassPath(JarUtils.getJarUrl(lib));
+			}
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+	}
+	private void addClassPath(final URL url) throws IOException {
+		final URLClassLoader sysloader = (URLClassLoader) ClassLoader
+				.getSystemClassLoader();
+		final Class<URLClassLoader> sysclass = URLClassLoader.class;
+		try {
+			final Method method = sysclass.getDeclaredMethod("addURL",
+					new Class[] { URL.class });
+			method.setAccessible(true);
+			method.invoke(sysloader, new Object[] { url });
+		} catch (final Throwable t) {
+			t.printStackTrace();
+			throw new IOException("Error adding " + url
+					+ " to system classloader");
+		}
+	}
+	public static JavaPlugin getPlugin() {
+		JavaPlugin plugin = null;
+		plugin = (JavaPlugin) Bukkit.getServer().getPluginManager().getPlugin("SpirebotIRC");
+		return plugin;
+	}
+	void loadIRCLogFile() {
+		try {
+			File chesterFile = new File(getDataFolder(), "irc.log");
+			if (!chesterFile.exists()) {
+				chesterFile.createNewFile();
+			}
+		} catch (IOException ioe) {
+		}
+	}
+	public static void writeLog(String message) {
+		File chesterFile = new File(plugin.getDataFolder(), "irc.log");
+		try {
+			FileWriter fw = new FileWriter(chesterFile, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(getTime() + ": " + message + "\n");
+			bw.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+	public static String getTime() {
+		Calendar cal = Calendar.getInstance();
+		Date dateO= cal.getTime();
+		DateFormat df = new SimpleDateFormat("h:mm a");
+		String date = df.format(dateO);
+		return date;
 	}
 }

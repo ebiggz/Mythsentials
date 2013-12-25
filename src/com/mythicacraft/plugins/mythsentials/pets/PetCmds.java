@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.pets;
+package com.mythicacraft.plugins.mythsentials.Pets;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,8 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
-import com.mythicacraft.plugins.mythsentials.Tools.Utils;
-import com.mythicacraft.plugins.mythsentials.pets.CmdProperties.Type;
+import com.mythicacraft.plugins.mythsentials.Pets.PetCmdProperties.Type;
+import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 
 public class PetCmds implements CommandExecutor {
 
@@ -20,17 +20,17 @@ public class PetCmds implements CommandExecutor {
 			if(args.length >= 1) {
 				if(args[0].equalsIgnoreCase("give")) {
 					if(args.length == 1) {
-						sender.sendMessage(ChatColor.RED + "You must include a players name to set the owner of your pet to!");
+						sender.sendMessage(ChatColor.RED + "You must include a player's name! /pet give [player]");
 					} else {
 						String name = Utils.completeName(args[1]);
 						if(name != null) {
 							Player newOwner = Bukkit.getPlayer(name);
-							CmdProperties CmdP;
+							PetCmdProperties CmdP;
 							if(newOwner == null) {
 								OfflinePlayer newOwnerO = Bukkit.getOfflinePlayer(name);
-								CmdP = new CmdProperties(Type.GIVE, newOwnerO);
+								CmdP = new PetCmdProperties(Type.GIVE, newOwnerO);
 							} else {
-								CmdP = new CmdProperties(Type.GIVE, newOwner);
+								CmdP = new PetCmdProperties(Type.GIVE, newOwner);
 							}
 							if(Mythsentials.petSelector.containsKey(player)) {
 								Mythsentials.petSelector.remove(player);
@@ -43,7 +43,7 @@ public class PetCmds implements CommandExecutor {
 					}
 				}
 				else if(args[0].equalsIgnoreCase("info")) {
-					CmdProperties CmdP = new CmdProperties(Type.INFO);
+					PetCmdProperties CmdP = new PetCmdProperties(Type.INFO);
 					if(Mythsentials.petSelector.containsKey(player)) {
 						Mythsentials.petSelector.remove(player);
 					}

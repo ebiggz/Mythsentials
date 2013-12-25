@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.compass;
+package com.mythicacraft.plugins.mythsentials.Compass;
 
 import java.util.Map;
 import java.util.Set;
@@ -19,8 +19,8 @@ import org.kitteh.vanish.staticaccess.VanishNoPacket;
 import org.kitteh.vanish.staticaccess.VanishNotLoadedException;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
-import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.Paginate;
+import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
+import com.mythicacraft.plugins.mythsentials.Utilities.Paginate;
 
 
 public class CompassTarget implements CommandExecutor {

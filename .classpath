@@ -9,6 +9,6 @@
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/VanishNoPacket.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.6.2-R0.2-20130804.060115-2.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/JSONAPI.jar"/>
-	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/SpirebotIRC.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Downloads/pircbot-1.5.0/pircbot.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

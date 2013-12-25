@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.jsonapi;
+package com.mythicacraft.plugins.mythsentials.JsonAPI;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

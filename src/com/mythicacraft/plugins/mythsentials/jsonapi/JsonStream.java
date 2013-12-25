@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.jsonapi;
+package com.mythicacraft.plugins.mythsentials.JsonAPI;
 
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
 

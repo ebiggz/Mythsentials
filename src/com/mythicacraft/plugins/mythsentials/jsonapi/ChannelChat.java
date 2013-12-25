@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.jsonapi;
+package com.mythicacraft.plugins.mythsentials.JsonAPI;
 
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
@@ -8,8 +8,8 @@ import org.bukkit.event.Listener;
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
 import com.dthielke.herochat.ChannelChatEvent;
 import com.dthielke.herochat.Chatter.Result;
-import com.gmail.ebiggz.plugins.spirebotirc.IRCToChannelEvent;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
+import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCToChannelEvent;
 
 
 public class ChannelChat implements Listener{

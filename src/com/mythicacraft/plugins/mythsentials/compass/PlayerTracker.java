@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.compass;
+package com.mythicacraft.plugins.mythsentials.Compass;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

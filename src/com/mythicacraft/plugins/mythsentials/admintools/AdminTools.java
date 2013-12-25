@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.admintools;
+package com.mythicacraft.plugins.mythsentials.AdminTools;
 
 import java.text.ParseException;
 import java.util.List;
@@ -18,10 +18,10 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.dthielke.herochat.Herochat;
-import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.Paginate;
-import com.mythicacraft.plugins.mythsentials.Tools.Time;
-import com.mythicacraft.plugins.mythsentials.Tools.Utils;
+import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
+import com.mythicacraft.plugins.mythsentials.Utilities.Paginate;
+import com.mythicacraft.plugins.mythsentials.Utilities.Time;
+import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 
 public class AdminTools implements CommandExecutor {
 
@@ -121,7 +121,7 @@ public class AdminTools implements CommandExecutor {
 					sender.sendMessage(ChatColor.RED + "Not a known player.");
 					return true;
 				}
-				List<DeathDrops> dropsList = Utils.getPlayerDeathDrops(args[0]);
+				List<PlayerDeathDrop> dropsList = Utils.getPlayerDeathDrops(args[0]);
 				if(dropsList.isEmpty()) {
 					sender.sendMessage(ChatColor.RED + "No prior deathdrops saved for " + args[0] + " yet.");
 					return true;
@@ -152,7 +152,7 @@ public class AdminTools implements CommandExecutor {
 								return true;
 							}
 
-							DeathDrops playerDD = dropsList.get(ddNum);
+							PlayerDeathDrop playerDD = dropsList.get(ddNum);
 
 							if(playerDD.hasArmor()) {
 
@@ -215,7 +215,7 @@ public class AdminTools implements CommandExecutor {
 							Player player = Bukkit.getPlayerExact(args[0]);
 							try {
 								int ddNum = Integer.parseInt(args[2])-1;
-								DeathDrops playerDD = dropsList.get(ddNum);
+								PlayerDeathDrop playerDD = dropsList.get(ddNum);
 								if(playerDD.hasArmor()) {
 
 									//get and set inventory
@@ -267,12 +267,12 @@ public class AdminTools implements CommandExecutor {
 					try {
 						int ddNum = Integer.parseInt(args[1])-1;
 						if(ddNum <= dropsList.size()) {
-							DeathDrops dd = dropsList.get(ddNum);
+							PlayerDeathDrop dd = dropsList.get(ddNum);
 							sender.sendMessage(ChatColor.GREEN + "-----" + ChatColor.YELLOW + args[0] + ChatColor.GREEN + " Death Drop #" + ChatColor.YELLOW + args[1] + ChatColor.GREEN + "-----");
 							sender.sendMessage(ChatColor.GOLD + "Time: " + ChatColor.GRAY + dd.getDeathTime());
 							sender.sendMessage(ChatColor.GOLD + "Location: " + ChatColor.GRAY + dd.getDeathLoc());
 							sender.sendMessage(ChatColor.GOLD + "Reason: " + ChatColor.GRAY + dd.getReason());
-							sender.sendMessage(ChatColor.GOLD + "Items: "  + ChatColor.DARK_AQUA + Utils.deathDropsItems(dd.getDrops()));
+							sender.sendMessage(ChatColor.GOLD + "Items: "  + ChatColor.DARK_AQUA + Utils.getDeathDropItemList(dd.getDrops()));
 						} else {
 							sender.sendMessage(ChatColor.RED + "Not a valid deathdrop number!");
 						}
@@ -328,11 +328,11 @@ public class AdminTools implements CommandExecutor {
 		}
 		return groupsStr;
 	}
-	public String getDeathDropsMenu(List<DeathDrops> dropsList) {
+	public String getDeathDropsMenu(List<PlayerDeathDrop> dropsList) {
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < dropsList.size(); i++) {
 			int dropNum = i + 1;
-			DeathDrops dd = dropsList.get(i);
+			PlayerDeathDrop dd = dropsList.get(i);
 			sb.append(dropNum + ": " + dd.getDeathTime() + "  Drops: " + dd.getDrops().size() + "\n");
 		}
 		return sb.toString();

@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.jsonapi;
+package com.mythicacraft.plugins.mythsentials.JsonAPI;
 
 import java.util.List;
 
@@ -38,8 +38,6 @@ public class HerochatJSONHandler implements JSONAPICallHandler {
 			String message = (String) args[2];
 			String channel = (String) args[0];
 			String sender = (String) args[1];
-
-			System.out.println("Channel = " + channel);
 
 			String fullName = ChatColor.translateAlternateColorCodes('&',PermissionsEx.getUser(sender).getPrefix() + sender + PermissionsEx.getUser(sender).getSuffix());
 

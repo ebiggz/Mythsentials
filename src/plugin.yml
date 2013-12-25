@@ -72,7 +72,34 @@ commands:
         usage: /<command>
     resmax:
         description: Select a max res size.
-        usage: /<command>   
+        usage: /<command>
+    colors:
+        description: Shows all the color and format text codes.
+        usage: /<command>
+    formats:
+        description: Shows all the color and format text codes.
+        usage: /<command>
+    colornames:
+        description: Shows the color names with color.
+        usage: /<command>
+    colorname:
+        description: Shows the color name with color.
+        usage: /<command>
+    prefix:
+        description: Allows you to set a prefix to your name.
+        usage: /<command> [prefix] - Leave blank to clear prefix
+    suffix:
+        description: Allows you to set a suffix to your name.
+        usage: /<command> [suffix] - Leave blank to clear suffix
+    color:
+        description: Shortcut commands to change color of the prefix/name/suffix
+        usage: /<command> [prefix/name/suffix] [colorname/clear]   
+    affixer:
+        description: Shows Affixer help menu.
+        usage: /<command> ?/Help  - Shows help menu
+    irc:
+        description: Shows online IRC users.
+        usage: /<command>
 permissions:
     mythica.helpsend:
         default: false
@@ -107,3 +134,18 @@ permissions:
             mythica.invtools: true
             mythica.invarmor: true
             mythica.test: true
+    affixer.colors:
+        default: false
+    affixer.colornames:
+        default: false
+    affixer.prefix:
+        default: false
+    affixer.suffix:
+        default: false
+    affixer.*:
+        default: op
+        children:
+            affixer.colornames: true
+            affixer.colors: true
+            affixer.prefix: true
+            affixer.suffix: true

@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.dragon;
+package com.mythicacraft.plugins.mythsentials.Dragon;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -7,8 +7,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-import com.mythicacraft.plugins.mythsentials.Tools.ConfigAccessor;
-import com.mythicacraft.plugins.mythsentials.Tools.Time;
+import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
+import com.mythicacraft.plugins.mythsentials.Utilities.Time;
 
 public class DragonListener implements Listener {
 
