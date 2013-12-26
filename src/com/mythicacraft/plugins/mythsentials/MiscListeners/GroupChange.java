@@ -37,7 +37,9 @@ public class GroupChange implements Listener {
 					if(p.isOnline()) {
 						p.sendMessage(ChatColor.AQUA + "Congrats " + p.getDisplayName() + ", you are now a member of " + ChatColor.YELLOW + "Mythica" + ChatColor.GREEN + "!\n" + ChatColor.DARK_AQUA + "Consult the guide books for help getting started. Also have a look at our online map to find a place to start your new adventure. Lastly, don't forget to check out our wiki and tutorials! Have fun!");
 						p.performCommand("ch g");
-						randomFireWork(p.getLocation());
+						Location fireworkLoc = p.getLocation();
+						fireworkLoc.setY(p.getLocation().getY()+2);
+						randomFireWork(fireworkLoc);
 						Player[] onlinePs = Bukkit.getOnlinePlayers();
 						for(int x = 0; x < onlinePs.length; x++) {
 							if(onlinePs[x] == p) continue;

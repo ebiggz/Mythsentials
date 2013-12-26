@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,18 +23,21 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.alecgorge.minecraft.jsonapi.JSONAPI;
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
 import com.mythicacraft.plugins.mythsentials.AdminTools.AdminTools;
 import com.mythicacraft.plugins.mythsentials.Affixer.AffixerCmds;
+import com.mythicacraft.plugins.mythsentials.Announcer.AnnouncerListener;
 import com.mythicacraft.plugins.mythsentials.Compass.CompassTarget;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonChecker;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonListener;
@@ -83,16 +87,24 @@ public class Mythsentials extends JavaPlugin {
 	public final HashMap<Player, String> passHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> taskIDHash = new HashMap<Player, String>();
 	public static HashMap<Player,PetCmdProperties> petSelector = new HashMap<Player,PetCmdProperties>();
+
 	public Economy economy = null;
 	public static Chat chat = null;
 	public static Permission permission = null;
+	public static boolean hasPermPlugin = false;
+
 	private JSONAPI jsonapi;
 	public static JSONAPIStream notificationStream = new JsonStream("notifications");
 	public static JSONAPIStream herochatStream = new JsonStream("herochat");
 	public static JSONAPIStream ircStream = new JsonStream("irc");
 	public static HashSet<PrintWriter> clients = new HashSet<PrintWriter>();
 
-	private static final Logger log = Logger.getLogger("Minecraft");
+	private long announcementInterval;
+	public static boolean usePermGroupLoginAnnouncements = false;
+	private static List<String> periodicAnnouncements;
+	private int nextAnnouncement = 0;
+
+	public static final Logger log = Logger.getLogger("Minecraft");
 	private static JavaPlugin plugin;
 
 	public void onDisable() {
@@ -126,6 +138,8 @@ public class Mythsentials extends JavaPlugin {
 		loadDragonData();
 		loadPircbotLib();
 		loadIRCLogFile();
+		loadPeriodicAnnouncements();
+		loadLoginAnnouncements();
 
 		//make irc spirebot
 		IRCBot.makeBot();
@@ -153,6 +167,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new PetSelectListener(), this);
 		pm.registerEvents(new ChannelChat(), this);
 		pm.registerEvents(new IRCEventListener(), this);
+		pm.registerEvents(new AnnouncerListener(), this);
 
 		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
@@ -193,6 +208,21 @@ public class Mythsentials extends JavaPlugin {
 		//start thread to talk to connected desktop client
 		Thread appCommun = new AppCommuncatior();
 		appCommun.start();
+
+		//start announcements schedule
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
+			@Override
+			public void run() {
+				if(periodicAnnouncements != null && !periodicAnnouncements.isEmpty()) {
+					Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', periodicAnnouncements.get(nextAnnouncement)));
+					nextAnnouncement++;
+					if(nextAnnouncement > periodicAnnouncements.size()-1) {
+						nextAnnouncement = 0;
+					}
+				}
+			}
+		}, announcementInterval, announcementInterval);
 
 		//finished
 		log.info("[Mythsentials] Enabled!");
@@ -252,6 +282,11 @@ public class Mythsentials extends JavaPlugin {
 			newConfig = this.getConfig();
 			newConfig.options().copyDefaults(true);
 
+			//get announcement data
+			announcementInterval = getConfig().getLong("Announcer.Minutes_Between_Periodic_Announcements")*1200;
+			usePermGroupLoginAnnouncements = getConfig().getBoolean("Announcer.Use_Permission_Group_Login_Announcements");
+			log.info("Time between accouncements (in minutes): " + announcementInterval/1200);
+
 			toolRepairPoint = newConfig.getInt("InvincibleStuff.toolRepairPoint", 99);
 			armorRepairPoint = newConfig.getInt("InvincibleStuff.armorRepairPoint", 1);
 			edIsAlive = newConfig.getBoolean("DragonData.dragonIsAlive");
@@ -310,7 +345,7 @@ public class Mythsentials extends JavaPlugin {
 	public void loadPircbotLib() {
 		try {
 			final File[] libs = new File[] {
-					new File(getDataFolder(), "pircbot.jar")};
+					new File(getDataFolder() + File.separator + "data" + File.separator + "libs", "pircbot.jar")};
 			for (final File lib : libs) {
 				if (!lib.exists()) {
 					JarUtils.extractFromJar(lib.getName(),
@@ -347,13 +382,11 @@ public class Mythsentials extends JavaPlugin {
 		}
 	}
 	public static JavaPlugin getPlugin() {
-		JavaPlugin plugin = null;
-		plugin = (JavaPlugin) Bukkit.getServer().getPluginManager().getPlugin("SpirebotIRC");
 		return plugin;
 	}
 	void loadIRCLogFile() {
 		try {
-			File chesterFile = new File(getDataFolder(), "irc.log");
+			File chesterFile = new File(getDataFolder() + File.separator + "data", "irc.log");
 			if (!chesterFile.exists()) {
 				chesterFile.createNewFile();
 			}
@@ -361,7 +394,7 @@ public class Mythsentials extends JavaPlugin {
 		}
 	}
 	public static void writeLog(String message) {
-		File chesterFile = new File(plugin.getDataFolder(), "irc.log");
+		File chesterFile = new File(plugin.getDataFolder() + File.separator + "data", "irc.log");
 		try {
 			FileWriter fw = new FileWriter(chesterFile, true);
 			BufferedWriter bw = new BufferedWriter(fw);
@@ -377,5 +410,46 @@ public class Mythsentials extends JavaPlugin {
 		DateFormat df = new SimpleDateFormat("h:mm a");
 		String date = df.format(dateO);
 		return date;
+	}
+	public static void loadPeriodicAnnouncements() {
+		ConfigAccessor periodicAnnouncementsAccess = new ConfigAccessor("announcer" + File.separator + "Periodic Announcements.yml");
+		String pluginFolder = plugin.getDataFolder().getAbsolutePath();	(new File(pluginFolder)).mkdirs();
+		File announcementsFile = new File(pluginFolder + File.separator + "data" + File.separator + "announcer" + File.separator + "Periodic Announcements.yml");
+
+		if (!announcementsFile.exists()) {
+			log.info("No Periodic Announcements.yml, making one now...");
+			periodicAnnouncementsAccess.saveDefaultConfig();
+			log.info("Done!");
+		} else {
+			log.info("Periodic Announcements.yml detected!");
+		}
+		periodicAnnouncements = periodicAnnouncementsAccess.getConfig().getStringList("Announcements");
+
+		log.info("Number of announcements: " + periodicAnnouncements.size());
+
+	}
+
+	private void loadLoginAnnouncements() {
+		String pluginFolderPath = this.getDataFolder().getAbsolutePath() + File.separator + "data" + File.separator + "announcer" + File.separator + "Login Announcements";
+		createFile(pluginFolderPath,"everyone.txt");
+		if(hasPermPlugin) {
+			for(String group: permission.getGroups()) {
+				createFile(pluginFolderPath + File.separator + "Permission Groups", group + ".txt");
+			}
+		}
+	}
+
+	private void createFile(String path, String fileName) {
+		(new File(path)).mkdirs();
+		File file = new File(path + File.separator + fileName);
+
+		if (!file.exists()) {
+			try {
+				file.createNewFile();
+				log.info("Created \"" + fileName + "\"");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

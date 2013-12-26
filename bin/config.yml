@@ -4,8 +4,7 @@ InvincibleStuff:
     armorRepairPoint: 1
     Tools: 276,277,278,279,293,261,359
     Armor: 302,303,304,305
-DragonData: 
-    dragonIsAlive: true
-    dragonLastKilledBy: playername
-    deathTime: Mar 13, 2013 12:00 PM
+Announcer:
+    Minutes_Between_Periodic_Announcements: 60
+    Use_Permission_Group_Login_Announcements: true
 

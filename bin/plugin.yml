@@ -96,7 +96,10 @@ commands:
         usage: /<command> [prefix/name/suffix] [colorname/clear]   
     affixer:
         description: Shows Affixer help menu.
-        usage: /<command> ?/Help  - Shows help menu 
+        usage: /<command> ?/Help  - Shows help menu
+    irc:
+        description: Shows online IRC users.
+        usage: /<command>
 permissions:
     mythica.helpsend:
         default: false
