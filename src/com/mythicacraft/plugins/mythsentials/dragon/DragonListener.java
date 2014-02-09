@@ -19,23 +19,35 @@ public class DragonListener implements Listener {
 		}
 		String killer = event.getEntity().getKiller().getDisplayName();
 		String time = Time.getTime();
-		updateConfig(false, killer, time);
+		if(event.getEntity().getWorld().getName().equalsIgnoreCase("survival_main_the_end")) {
+			updateConfig(killer, time, "survival");
+		}
+		else if(event.getEntity().getWorld().getName().equalsIgnoreCase("pvp_main_the_end")) {
+			updateConfig(killer, time, "pvp");
+		}
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onEnderDragonSpawn(final CreatureSpawnEvent event) {
 		if (event.getEntityType() != EntityType.ENDER_DRAGON) return;
-		updateConfig(true, null, null);
-	}
-	public void updateConfig(Boolean b, String player, String time){
 		ConfigAccessor dragonData = new ConfigAccessor("dragon.yml");
-		if(b.equals(false)) {
-			dragonData.getConfig().set("DragonData.dragonIsAlive", false);
-			dragonData.getConfig().set("DragonData.dragonLastKilledBy", player);
-			dragonData.getConfig().set("DragonData.deathTime", time);
-			dragonData.saveConfig();
-			return;
+		String worldType = null;
+		if(event.getEntity().getWorld().getName().equalsIgnoreCase("survival_main_the_end")) {
+			worldType = "survival";
 		}
-		dragonData.getConfig().set("DragonData.dragonIsAlive", true);
+		else if(event.getEntity().getWorld().getName().equalsIgnoreCase("pvp_main_the_end")) {
+			worldType = "pvp";
+		}
+		if(worldType != null) {
+			dragonData.getConfig().set("DragonData." + worldType + ".dragonIsAlive", true);
+			dragonData.saveConfig();
+		}
+	}
+	public void updateConfig(String player, String time, String worldType){
+		ConfigAccessor dragonData = new ConfigAccessor("dragon.yml");
+		dragonData.getConfig().set("DragonData." + worldType + ".dragonIsAlive", false);
+		dragonData.getConfig().set("DragonData." + worldType + ".dragonLastKilledBy", player);
+		dragonData.getConfig().set("DragonData." + worldType + ".deathTime", time);
+		dragonData.getConfig().set("Kills." + worldType + "." + player, dragonData.getConfig().getInt("Kills." + worldType + "." + player, 0)+1);
 		dragonData.saveConfig();
 	}
 }

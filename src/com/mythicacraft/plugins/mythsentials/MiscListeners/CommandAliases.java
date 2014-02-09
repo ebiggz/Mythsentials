@@ -23,33 +23,31 @@ public class CommandAliases implements Listener {
 
 	@EventHandler(priority= EventPriority.HIGHEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+
 		String command = event.getMessage();
 		final Player p = event.getPlayer();
+
 		if(command.contains("/money")) {
 			String newCommand = command.replace("/money", "/econ");
 			event.setMessage(newCommand);
-			return;
 		}
 
-		if(command.contains("/tell")) {
+		else if(command.contains("/tell")) {
 			String newCommand = command.replace("/tell", "/msg");
 			event.setMessage(newCommand);
-			return;
 		}
 
-		if(command.equalsIgnoreCase("/res tool")) {
+		else if(command.equalsIgnoreCase("/res tool")) {
 			String newCommand = "/restool";
 			event.setMessage(newCommand);
-			return;
 		}
 
-		if(command.equalsIgnoreCase("/res select max")) {
+		else if(command.equalsIgnoreCase("/res select max")) {
 			String newCommand = "/resmax";
 			event.setMessage(newCommand);
-			return;
 		}
 
-		if(command.equalsIgnoreCase("/sync")) {
+		else if(command.equalsIgnoreCase("/sync")) {
 			String newCommand = "/cbsync";
 			event.setMessage(newCommand);
 			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -64,7 +62,6 @@ public class CommandAliases implements Listener {
 				}
 			}
 			, 10L);
-			return;
 		}
 	}
 }

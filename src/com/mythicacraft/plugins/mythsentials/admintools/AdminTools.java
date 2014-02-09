@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,6 +19,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.dthielke.herochat.Herochat;
+import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.Paginate;
 import com.mythicacraft.plugins.mythsentials.Utilities.Time;
@@ -27,12 +29,29 @@ public class AdminTools implements CommandExecutor {
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		ConfigAccessor playerData = new ConfigAccessor("players.yml");
+		Player playerP = (Player) sender;
 		if(!sender.hasPermission("mythica.mod")) {
 			sender.sendMessage(ChatColor.RED + "You don't have permission for this!");
 			return true;
 		}
 		if(commandLabel.equalsIgnoreCase("toolbox")) {
 
+		}
+		if(commandLabel.equalsIgnoreCase("mobselect")) {
+			if(!Mythsentials.mobCopy.contains(playerP)) {
+				Mythsentials.mobCopy.add(playerP);
+			}
+			sender.sendMessage(ChatColor.AQUA + "Please left-click a mob to select, sah. I'll cancel damage.");
+		}
+		if(commandLabel.equalsIgnoreCase("mobtp")) {
+			if(Mythsentials.copiedMob.containsKey(playerP)) {
+				Entity mob = Mythsentials.copiedMob.get(playerP);
+				mob.teleport(playerP.getLocation());
+				Mythsentials.copiedMob.remove(playerP);
+				sender.sendMessage(ChatColor.AQUA + "Mob has been tp'd to you, sah.");
+			} else {
+				sender.sendMessage(ChatColor.RED + "It doesn't appear that you have a mob selected, sah.");
+			}
 		}
 		if(commandLabel.equalsIgnoreCase("loginlocation")) {
 

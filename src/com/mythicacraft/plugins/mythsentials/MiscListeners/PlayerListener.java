@@ -15,12 +15,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.scoreboard.DisplaySlot;
 
+import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.NotificationStreamMessage;
@@ -37,6 +40,16 @@ public class PlayerListener implements Listener {
 	}
 
 	@EventHandler (priority = EventPriority.MONITOR)
+	public void onGoingToPvP(PlayerChangedWorldEvent event) {
+		String worldType = MythicaSpawn.getSpawnManager().getWorldType(event.getPlayer().getWorld());
+		if(worldType.equalsIgnoreCase("pvp")) {
+			Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex reload");
+			System.out.println("Reloaded");
+		}
+	}
+
+
+	@EventHandler (priority = EventPriority.MONITOR)
 	public void onJoin(PlayerJoinEvent event) {
 		ConfigAccessor playerData = new ConfigAccessor("players.yml");
 		Player p = event.getPlayer();
@@ -51,6 +64,9 @@ public class PlayerListener implements Listener {
 		String time = Time.getTime();
 		playerData.getConfig().set(playerName + ".joinTime", time);
 		playerData.saveConfig();
+		if(MythicaSpawn.getSpawnManager().getWorldType(p.getWorld()).equalsIgnoreCase("pvp")) {
+			Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex reload");
+		}
 	}
 
 	@EventHandler (priority = EventPriority.MONITOR)
@@ -58,10 +74,22 @@ public class PlayerListener implements Listener {
 		ConfigAccessor playerData = new ConfigAccessor("players.yml");
 		Player p = event.getPlayer();
 		String playerName = p.getDisplayName();
-		plugin.economy.getBalance(playerName);
-		Double balance = plugin.economy.getBalance(playerName);
+		Mythsentials.economy.getBalance(playerName);
+		Double balance = Mythsentials.economy.getBalance(playerName);
 		playerData.getConfig().set(playerName + ".logoffBalance", balance);
 		playerData.saveConfig();
+
+		if(plugin.compassInfoPanels.containsKey(p)) {
+			plugin.compassInfoPanels.get(p).cancel();
+			plugin.compassInfoPanels.remove(p);
+			p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		}
+
+		if(plugin.playerTrackers.containsKey(p)) {
+			plugin.playerTrackers.get(p).cancel();
+			plugin.playerTrackers.remove(p);
+			p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		}
 	}
 
 
@@ -77,7 +105,7 @@ public class PlayerListener implements Listener {
 
 		List<ItemStack> armor = Arrays.asList(event.getEntity().getInventory().getArmorContents());
 		List<ItemStack> drops = event.getDrops();
-		event.getEntity().getInventory().getContents();
+
 		if(drops.size() > 3) {
 			if(!playerData.getConfig().contains(playerName + ".lastDeathDrops")) {
 				playerData.getConfig().createSection(playerName + ".lastDeathDrops");
@@ -93,7 +121,7 @@ public class PlayerListener implements Listener {
 			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Time", Time.dateAndTimeFromMills(Time.timeInMillis()));
 			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Location", deathLoc);
 			playerData.getConfig().set(playerName + ".lastDeathDrops.1.World", deathWorld);
-			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Reason", event.getDeathMessage().replace(playerName, ""));
+			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Reason", event.getDeathMessage().replace(playerName, "").trim());
 			for(int i = 0; i < dropsList.size(); i++) {
 				int dropNum = i + 2;
 				playerData.getConfig().set(playerName + ".lastDeathDrops." + dropNum + ".Drops", dropsList.get(i).getDrops());

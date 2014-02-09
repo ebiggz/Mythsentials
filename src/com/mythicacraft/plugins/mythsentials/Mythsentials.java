@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -36,6 +38,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.alecgorge.minecraft.jsonapi.JSONAPI;
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
 import com.mythicacraft.plugins.mythsentials.AdminTools.AdminTools;
+import com.mythicacraft.plugins.mythsentials.AdminTools.MobCopyListener;
 import com.mythicacraft.plugins.mythsentials.Affixer.AffixerCmds;
 import com.mythicacraft.plugins.mythsentials.Announcer.AnnouncerListener;
 import com.mythicacraft.plugins.mythsentials.Compass.CompassTarget;
@@ -49,6 +52,7 @@ import com.mythicacraft.plugins.mythsentials.JsonAPI.ResidenceJSONHandler;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.HelpMe;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.HelpMenu;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.Registration;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.RepairCmd;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.ResMax;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.ResTool;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.TestCmds;
@@ -69,6 +73,7 @@ import com.mythicacraft.plugins.mythsentials.Pets.PetSelectListener;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCBot;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCCommands;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCEventListener;
+import com.mythicacraft.plugins.mythsentials.Unenchant.UnenchantCmd;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.JarUtils;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
@@ -83,15 +88,18 @@ public class Mythsentials extends JavaPlugin {
 	public HashMap<Integer, Boolean> tools;
 	public HashMap<Integer, Boolean> armor;
 	public HashMap<Player, BukkitTask> playerTrackers = new HashMap<Player, BukkitTask>();
+	public HashMap<Player, BukkitTask> compassInfoPanels = new HashMap<Player, BukkitTask>();
 	public final HashMap<Player, String> emailHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> passHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> taskIDHash = new HashMap<Player, String>();
 	public static HashMap<Player,PetCmdProperties> petSelector = new HashMap<Player,PetCmdProperties>();
+	public static List<Player> mobCopy = new ArrayList<Player>();
+	public static HashMap<Player, Entity> copiedMob = new HashMap<Player, Entity>();
 
-	public Economy economy = null;
+	public static Economy economy = null;
 	public static Chat chat = null;
 	public static Permission permission = null;
-	public static boolean hasPermPlugin = false;
+	public static boolean hasPermPlugin = true;
 
 	private JSONAPI jsonapi;
 	public static JSONAPIStream notificationStream = new JsonStream("notifications");
@@ -100,12 +108,13 @@ public class Mythsentials extends JavaPlugin {
 	public static HashSet<PrintWriter> clients = new HashSet<PrintWriter>();
 
 	private long announcementInterval;
-	public static boolean usePermGroupLoginAnnouncements = false;
+	public static boolean usePermGroupLoginAnnouncements = true;
 	private static List<String> periodicAnnouncements;
 	private int nextAnnouncement = 0;
 
 	public static final Logger log = Logger.getLogger("Minecraft");
 	private static JavaPlugin plugin;
+	private static MythianManager mm;
 
 	public void onDisable() {
 		log.info("[Mythsentials] Disabled!");
@@ -116,6 +125,8 @@ public class Mythsentials extends JavaPlugin {
 		PluginManager pm = getServer().getPluginManager();
 
 		plugin = this;
+
+		mm = new MythianManager();
 
 		//make sure vault is installed
 		if(!setupVault()) {
@@ -168,6 +179,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new ChannelChat(), this);
 		pm.registerEvents(new IRCEventListener(), this);
 		pm.registerEvents(new AnnouncerListener(), this);
+		pm.registerEvents(new MobCopyListener(), this);
 
 		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
@@ -178,6 +190,8 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("playerinfo").setExecutor(new AdminTools());
 		getCommand("deathdrops").setExecutor(new AdminTools());
 		getCommand("loginlocation").setExecutor(new AdminTools());
+		getCommand("mobselect").setExecutor(new AdminTools());
+		getCommand("mobtp").setExecutor(new AdminTools());
 		getCommand("compass").setExecutor(new CompassTarget(this));
 		getCommand("modhelp").setExecutor(new HelpMe());
 		getCommand("adminhelp").setExecutor(new HelpMe());
@@ -190,7 +204,7 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("spirebot").setExecutor(new HelpMenu());
 		getCommand("resmax").setExecutor(new ResMax());
 		getCommand("mythicatest").setExecutor(new TestCmds());
-		getCommand("dragon").setExecutor(new DragonChecker(this));
+		getCommand("dragon").setExecutor(new DragonChecker());
 		getCommand("pet").setExecutor(new PetCmds());
 		getCommand("affixer").setExecutor(new AffixerCmds());
 		getCommand("colors").setExecutor(new AffixerCmds());
@@ -201,6 +215,10 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("colornames").setExecutor(new AffixerCmds());
 		getCommand("colorname").setExecutor(new AffixerCmds());
 		getCommand("irc").setExecutor(new IRCCommands());
+		getCommand("mythicarepair").setExecutor(new RepairCmd());
+		getCommand("runes").setExecutor(new UnenchantCmd(this));
+		getCommand("rune").setExecutor(new UnenchantCmd(this));
+		getCommand("unenchant").setExecutor(new UnenchantCmd(this));
 
 		//initiate the utils class
 		new Utils(this);
@@ -451,5 +469,9 @@ public class Mythsentials extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static MythianManager getMythianManager() {
+		return mm;
 	}
 }

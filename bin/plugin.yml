@@ -100,10 +100,30 @@ commands:
     irc:
         description: Shows online IRC users.
         usage: /<command>
+    mobselect:
+        description: Selects mob.
+        usage: /<command>
+    mobtp:
+        description: tps selected mob.
+        usage: /<command>
+    mythicarepair:
+        description: tps selected mob.
+        usage: /<command>
+    unenchant:
+        description: tps selected mob.
+        usage: /<command>
+    runes:
+        description: tps selected mob.
+        usage: /<command>
+    rune:
+        description: tps selected mob.
+        usage: /<command>
 permissions:
     mythica.helpsend:
         default: false
     mythica.helpreceive:
+        default: false
+    mythica.repair:
         default: false
     mythica.restool:
         default: false

@@ -50,7 +50,7 @@ public class AffixerCmds implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "You must be a donator or subscriber to set your prefix!");
 				return true;
 			}
-			if(args.length < 1){
+			if(args.length == 0){
 				//If command is just "/prefix", clear the players prefix
 				if(playerName.hasPrefix()) {//But check if player even has a prefix first
 					playerName.setPrefix("");
@@ -78,7 +78,7 @@ public class AffixerCmds implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "You must be a donator or subscriber to set your suffix!");
 				return true;
 			}
-			if(args.length < 1) {
+			if(args.length == 0) {
 				if(playerName.hasSuffix()) {
 					playerName.setSuffix("");
 					sender.sendMessage(ChatColor.BLUE + "Your suffix has been removed!");

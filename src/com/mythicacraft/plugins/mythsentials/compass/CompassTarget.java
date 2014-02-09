@@ -18,6 +18,8 @@ import org.bukkit.entity.Player;
 import org.kitteh.vanish.staticaccess.VanishNoPacket;
 import org.kitteh.vanish.staticaccess.VanishNotLoadedException;
 
+import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
+import com.gmail.mythicacraft.mythicaspawn.SpawnManager;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.Paginate;
@@ -41,9 +43,9 @@ public class CompassTarget implements CommandExecutor {
 
 		final Player p = (Player) sender;
 		String playerName = sender.getName();
-		Location spire = new Location(realm, -37, 133, -5);
 		Location home = p.getBedSpawnLocation();
 		Paginate helpPage = new Paginate(helpMenu(),"Compass Commands");
+		SpawnManager SM = MythicaSpawn.getSpawnManager();
 
 		if(commandLabel.equalsIgnoreCase("compass") || commandLabel.equalsIgnoreCase("c")) {
 
@@ -98,54 +100,30 @@ public class CompassTarget implements CommandExecutor {
 				} //end of help
 
 				if(args[0].equalsIgnoreCase("current") || args[0].equalsIgnoreCase("c") || args[0].equalsIgnoreCase("currenttarget") || args[0].equalsIgnoreCase("ct")) {
-					Location currentTar = p.getCompassTarget();
-					if(currentTar.equals(spire)) {
-						sender.sendMessage(ChatColor.GREEN + "Compass currently pointed to: " + ChatColor.YELLOW + "Spire");
-						return true;
-					}
-					if(currentTar.equals(home)) {
-						sender.sendMessage(ChatColor.GREEN + "Compass currently pointed to: " + ChatColor.YELLOW + "Home");
-						return true;
-					}
-					if(currentTar.equals(realm.getSpawnLocation())) {
-						sender.sendMessage(ChatColor.GREEN + "Compass currently pointed to: " + ChatColor.YELLOW + "Spawn");
+
+					if(p.getWorld().getEnvironment() == Environment.NETHER) {
+						sender.sendMessage(ChatColor.RED + "Compasses don't have targets in the nether!");
 						return true;
 					}
 
-					if(plugin.playerTrackers.containsKey(p)) {
-						if(playerData.getConfig().contains(playerName + ".playerTrack")) {
-							String playerTrack = playerData.getConfig().getString(playerName + ".playerTrack");
-							sender.sendMessage(ChatColor.GREEN + "Compass currently pointed to: " + ChatColor.YELLOW + playerTrack);
-							return true;
-						}
+					/*if(plugin.compassInfoPanels.containsKey(p)) {
+						plugin.compassInfoPanels.get(p).cancel();
+						plugin.compassInfoPanels.remove(p);
+						p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+						sender.sendMessage(ChatColor.GREEN + "[Compass] Hiding current target info panel.");
+					} else {
+						plugin.compassInfoPanels.put(p, new CompassInfoPanel(p).runTaskTimerAsynchronously(plugin, 1L, 10L));
+						sender.sendMessage(ChatColor.GREEN + "[Compass] Showing current target info panel. Type \"/c current\" to hide.");
 					}
+					 */
+					sender.sendMessage(ChatColor.GREEN + "Compass current info panel has been momentarily disabled. (It's been found to cause lag). Try again soon!");
 
-					Set<String> targets = null;
-					if (playerData.getConfig().contains(playerName + ".compassTargets")) {
-						targets = playerData.getConfig().getConfigurationSection(playerName + ".compassTargets").getKeys(false);
-						if (targets != null) {
-							for (String targetName : targets) {
-								if(targetName != null) {
-									String[] points = playerData.getConfig().getString(playerName + ".compassTargets." + targetName).split(",");
-									if(points.length >= 4) {
-										World targetWorld = Bukkit.getWorld(points[3]);
-										Location targetLoc = new Location(targetWorld, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
-										if(currentTar.equals(targetLoc)) {
-											sender.sendMessage(ChatColor.GREEN + "Compass currently pointed to: " + ChatColor.YELLOW + targetName);
-											return true;
-										}
-									}
-								}
-							}
-						}
-					}
-					sender.sendMessage(ChatColor.RED + "Whoops! Unable to get compass target!");
 				} //end of current
 
 				if(args[0].equalsIgnoreCase("targets") || args[0].equalsIgnoreCase("t")) {
 					StringBuilder sb = new StringBuilder();
 					sb.append(ChatColor.YELLOW + "Presets:\n");
-					sb.append(ChatColor.AQUA + "Spire" + ChatColor.GRAY + " - The Spire/Spawn.\n");
+					sb.append(ChatColor.AQUA + "Spawn" + ChatColor.GRAY + " - Spawn.\n");
 					sb.append(ChatColor.AQUA + "Home" + ChatColor.GRAY + " - The last bed you slept in.\n");
 					sb.append(ChatColor.AQUA + "Death" + ChatColor.GRAY + " - Your last death point.\n");
 					sb.append(ChatColor.AQUA + "Online player's name" + ChatColor.GRAY + " - Point to player's current position.\n");
@@ -187,8 +165,8 @@ public class CompassTarget implements CommandExecutor {
 				} //end of targets
 
 				if(args[0].equalsIgnoreCase("savetarget") || args[0].equalsIgnoreCase("savet") || args[0].equalsIgnoreCase("savetar")) {
-					if(args[1].length() > 15) {
-						sender.sendMessage(ChatColor.RED + "Your target name is too long! (15 character max)");
+					if(args[1].length() > 16) {
+						sender.sendMessage(ChatColor.RED + "Your target name is too long! (16 character max)");
 						return true;
 					}
 					if(p.getWorld().getEnvironment() == Environment.NETHER) {
@@ -338,7 +316,7 @@ public class CompassTarget implements CommandExecutor {
 							plugin.playerTrackers.get(p).cancel();
 							plugin.playerTrackers.remove(p);
 						}
-						p.setCompassTarget(spire);
+						p.setCompassTarget(SM.getSurvivalSpawn());
 						sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
 						return true;
 					case "spawn":
@@ -346,7 +324,15 @@ public class CompassTarget implements CommandExecutor {
 							plugin.playerTrackers.get(p).cancel();
 							plugin.playerTrackers.remove(p);
 						}
-						p.setCompassTarget(spire);
+						String worldType = SM.getWorldType(p.getWorld());
+						if(worldType.equalsIgnoreCase("survival")) {
+							p.setCompassTarget(SM.getSurvivalSpawn());
+						}
+						else if(worldType.equalsIgnoreCase("pvp")) {
+							p.setCompassTarget(SM.getPvpSpawn());
+						} else {
+							p.setCompassTarget(SM.getInitialSpawn());
+						}
 						sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
 						return true;
 					case "home":
@@ -451,10 +437,11 @@ public class CompassTarget implements CommandExecutor {
 								plugin.playerTrackers.get(p).cancel();
 								plugin.playerTrackers.remove(p);
 							}
-							sender.sendMessage(ChatColor.GREEN + "Pointed compass to track " + ChatColor.YELLOW + playername + ChatColor.GREEN + ".");
-							plugin.playerTrackers.put(p, new PlayerTracker(plugin, p, target).runTaskTimer(plugin, 1L, 10L));
-							playerData.getConfig().set(playerName + ".playerTrack", playername);
-							playerData.saveConfig();
+							sender.sendMessage(ChatColor.GREEN + "Tracking online players has been momentarily disabled. (It's been found to cause lag and has been exploted in PvP universe). Try again soon!");
+							//sender.sendMessage(ChatColor.GREEN + "Pointed compass to track " + ChatColor.YELLOW + playername + ChatColor.GREEN + ".");
+							//plugin.playerTrackers.put(p, new PlayerTracker(plugin, p, target).runTaskTimer(plugin, 1L, 10L));
+							//playerData.getConfig().set(playerName + ".playerTrack", playername);
+							//playerData.saveConfig();
 							return true;
 						}
 					}

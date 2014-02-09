@@ -86,14 +86,14 @@ public class IRCBot extends PircBot {
 
 		if(sender.equals("Spirebot")) return;
 
-		User user = IRCUtils.getUser(sender, channel);
+		/*User user = IRCUtils.getUser(sender, channel);
 
 		if(!user.hasVoice()) {
 			if(!user.isOp()) {
 				sendMessage(sender, Colors.YELLOW + "Reminder! You are currently muted. Message me \"?help\" for help with commands.");
 				return;
 			}
-		}
+		}*/
 
 		if(channel.equals("#MythicaCraft")) {
 			if(!sender.equals("[Global]")) {
@@ -256,7 +256,7 @@ public class IRCBot extends PircBot {
 			return;
 		}
 		String world = null;
-		if(Mythsentials.permission.playerInGroup(world, mcName, "Moderator") || Mythsentials.permission.playerInGroup(world, mcName, "Admin")) {
+		if(Mythsentials.permission.playerInGroup(world, mcName, "Moderator") || Mythsentials.permission.playerInGroup(world, mcName, "Admin") || Mythsentials.permission.playerInGroup(world, mcName, "Owner")) {
 			op("#MythicaCraft", nick);
 		}
 		voice("#MythicaCraft", nick);

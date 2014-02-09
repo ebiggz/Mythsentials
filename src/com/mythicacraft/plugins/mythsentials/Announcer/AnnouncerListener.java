@@ -25,6 +25,9 @@ public class AnnouncerListener implements Listener {
 		scheduler.scheduleSyncDelayedTask(Mythsentials.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
+				if(event.getPlayer().getName().equals("scribbles08")) {
+					event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Welcome back, Princess <3");
+				}
 				event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', everyoneAnnouncement()));
 				if(Mythsentials.usePermGroupLoginAnnouncements && Mythsentials.hasPermPlugin) {
 					String[] playerGroups = Mythsentials.permission.getPlayerGroups(event.getPlayer());

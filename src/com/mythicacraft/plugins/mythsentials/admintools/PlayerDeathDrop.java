@@ -27,7 +27,6 @@ public class PlayerDeathDrop implements Comparable<Object>{
 			this.drops = (List<ItemStack>) deathDropData.getList("Drops");
 		}
 		if(deathDropData.contains("Armor")) {
-			System.out.println("has armor");
 			this.armor = (List<ItemStack>) deathDropData.getList("Armor");
 		}
 		if(deathDropData.contains("Time")) {

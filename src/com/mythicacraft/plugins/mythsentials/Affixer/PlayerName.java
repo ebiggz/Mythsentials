@@ -9,6 +9,7 @@ import com.mythicacraft.plugins.mythsentials.Mythsentials;
 public class PlayerName {
 
 	private Player player;
+	private String world = null;
 
 	PlayerName(Player player) {
 		this.player = player;
@@ -36,7 +37,7 @@ public class PlayerName {
 	}
 
 	public void setPrefix(String prefix) {
-		Mythsentials.chat.setPlayerPrefix(player, prefix);
+		Mythsentials.chat.setPlayerPrefix(world, player.getName(), prefix);
 	}
 
 	public boolean hasSuffix() {
@@ -49,6 +50,6 @@ public class PlayerName {
 	}
 
 	public void setSuffix(String suffix) {
-		Mythsentials.chat.setPlayerSuffix(player, suffix);
+		Mythsentials.chat.setPlayerSuffix(world, player.getName(), suffix);
 	}
 }

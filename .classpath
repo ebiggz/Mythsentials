@@ -7,8 +7,9 @@
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Residence.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Vault.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/VanishNoPacket.jar"/>
-	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.6.2-R0.2-20130804.060115-2.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/JSONAPI.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Downloads/pircbot-1.5.0/pircbot.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.7.2-R0.3-20131225.043429-2.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Games/MCServer/plugins/MythicaSpawn.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
