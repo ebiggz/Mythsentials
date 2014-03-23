@@ -1,9 +1,5 @@
 package com.mythicacraft.plugins.mythsentials.MiscCommands;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -86,21 +82,9 @@ public class Registration implements CommandExecutor {
 				}
 
 				//Connect to external PHP script to add user to forum
-				try {
-					URL phpUrl = new URL("http://www.mythicacraft.com/game2forum.php?username=" + sender.getName() + "&password=" + plugin.passHash.get(player) + "&email=" + plugin.emailHash.get(player));
-					URLConnection urlCon = phpUrl.openConnection();
-					BufferedReader br = new BufferedReader(
-							new InputStreamReader(
-									urlCon.getInputStream()));
-					@SuppressWarnings("unused")
-					String line;
+				new ForumConnector(sender.getName(), plugin.emailHash.get(player), plugin.passHash.get(player)).run();
 
-					while ((line = br.readLine()) != null)
-						br.close();
-				} catch(Exception e) {
-					// handle errors here...
-				}
-				sender.sendMessage(ChatColor.GREEN + "You have successfully registered! You may login to our forums " + ChatColor.AQUA + "(www.mythicacraft.com/forums)" + ChatColor.GREEN + " with your in-game name and the password you specified! (We sent you an e-mail for safe keeping)");
+				sender.sendMessage(ChatColor.GREEN + "You have successfully registered! You will be automatically promoted within a few seconds.");
 				Bukkit.getServer().getScheduler().cancelTask(Integer.parseInt(plugin.taskIDHash.get(player))); //Cancels timeout task
 
 				//Clears hash data to remove access to confirm and cancel commands
@@ -108,7 +92,7 @@ public class Registration implements CommandExecutor {
 				plugin.passHash.remove(player);
 				plugin.taskIDHash.remove(player);
 
-				//Schedules automatic sync with forums 10 seconds after registration confirmation
+				//Schedules automatic sync with forums 5 seconds after registration confirmation
 				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 					public void run() {
 						player.performCommand("cbsync");

@@ -60,5 +60,4 @@ public class ConfigAccessor {
 			this.plugin.saveResource("data" + File.separator + fileName, false);
 		}
 	}
-
 }

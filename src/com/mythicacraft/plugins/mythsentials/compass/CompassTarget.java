@@ -20,6 +20,7 @@ import org.kitteh.vanish.staticaccess.VanishNotLoadedException;
 
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.gmail.mythicacraft.mythicaspawn.SpawnManager;
+import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.Paginate;
@@ -310,6 +311,8 @@ public class CompassTarget implements CommandExecutor {
 						sender.sendMessage(ChatColor.RED + "Compasses do not work in the nether!");
 						return true;
 					}
+					Mythian mythian = Mythsentials.getMythianManager().getMythian(playerName);
+					Location death = mythian.getLastDeathLoc();
 					switch(args[1].toLowerCase()) {
 					case "spire":
 						if(plugin.playerTrackers.containsKey(p)) {
@@ -348,10 +351,7 @@ public class CompassTarget implements CommandExecutor {
 						}
 						return true;
 					case "death":
-						if(playerData.getConfig().contains(playerName + ".lastDeathLoc")) {
-							String[] points = playerData.getConfig().getString(playerName + ".lastDeathLoc").split(",");
-							World deathWorld = Bukkit.getWorld(points[3]);
-							Location death = new Location(deathWorld, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
+						if(death != null) {
 							if(plugin.playerTrackers.containsKey(p)) {
 								plugin.playerTrackers.get(p).cancel();
 								plugin.playerTrackers.remove(p);
@@ -363,10 +363,7 @@ public class CompassTarget implements CommandExecutor {
 						}
 						return true;
 					case "deathpoint":
-						if(playerData.getConfig().contains(playerName + ".lastDeathLoc")) {
-							String[] points = playerData.getConfig().getString(playerName + ".lastDeathLoc").split(",");
-							World deathWorld = Bukkit.getWorld(points[3]);
-							Location death = new Location(deathWorld, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
+						if(death != null) {
 							if(plugin.playerTrackers.containsKey(p)) {
 								plugin.playerTrackers.get(p).cancel();
 								plugin.playerTrackers.remove(p);

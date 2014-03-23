@@ -43,6 +43,15 @@ public class PlayerDeathDrop implements Comparable<Object>{
 		}
 	}
 
+	public PlayerDeathDrop(String playerName, List<ItemStack> drops, List<ItemStack> armor, String deathLoc, String world, String reason) {
+		this.player = playerName;
+		this.drops = drops;
+		this.armor = armor;
+		this.deathLoc = deathLoc;
+		this.world = world;
+		this.reason = reason;
+	}
+
 	public String getPlayer() {
 		return player;
 	}

@@ -106,6 +106,7 @@ public class HelpMenu implements CommandExecutor {
 		sb.append(ChatColor.AQUA + "/rules" + ChatColor.GRAY + " - See the rules of Mythica.\n");
 		sb.append(ChatColor.AQUA + "/dragon" + ChatColor.GRAY + " - Check if the dragon is alive or not.\n");
 		sb.append(ChatColor.AQUA + "/recipe [ItemName]" + ChatColor.GRAY + " - See the crafting recipe for an item.\n");
+		sb.append(ChatColor.AQUA + "/mw help" + ChatColor.GRAY + " - See the help menu for weather commands.\n");
 		sb.append(ChatColor.AQUA + "/mail send [PlayerName] [message]" + ChatColor.GRAY + " - Send mail to a player.\n");
 		sb.append(ChatColor.AQUA + "/pvp" + ChatColor.GRAY + " - Toggle your PvP status in survival worlds.\n");
 		sb.append(ChatColor.AQUA + "/money" + ChatColor.GRAY + " - See your in-game cash.\n");

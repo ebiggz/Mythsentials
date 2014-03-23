@@ -118,6 +118,13 @@ commands:
     rune:
         description: tps selected mob.
         usage: /<command>
+    mythicastore:
+        description: Access to Mythica Store commands.
+        usage: /<command> claim
+        aliases: [ms, mstore]
+    mw:
+        description: Access to Mythica Weather commands.
+        usage: /<command> help
 permissions:
     mythica.helpsend:
         default: false

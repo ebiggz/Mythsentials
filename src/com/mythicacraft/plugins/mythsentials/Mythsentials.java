@@ -25,6 +25,7 @@ import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -73,10 +74,16 @@ import com.mythicacraft.plugins.mythsentials.Pets.PetSelectListener;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCBot;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCCommands;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCEventListener;
+import com.mythicacraft.plugins.mythsentials.Store.PurchaseHandler;
+import com.mythicacraft.plugins.mythsentials.Store.StoreCommands;
+import com.mythicacraft.plugins.mythsentials.Store.StoreItem;
+import com.mythicacraft.plugins.mythsentials.Store.StoreManager;
 import com.mythicacraft.plugins.mythsentials.Unenchant.UnenchantCmd;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.JarUtils;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
+import com.mythicacraft.plugins.mythsentials.Weather.WeatherCommands;
+import com.mythicacraft.plugins.mythsentials.Weather.WeatherListener;
 public class Mythsentials extends JavaPlugin {
 
 	//ton of class and plugin vars
@@ -100,6 +107,7 @@ public class Mythsentials extends JavaPlugin {
 	public static Chat chat = null;
 	public static Permission permission = null;
 	public static boolean hasPermPlugin = true;
+	public static boolean hasEconPlugin = false;
 
 	private JSONAPI jsonapi;
 	public static JSONAPIStream notificationStream = new JsonStream("notifications");
@@ -115,6 +123,14 @@ public class Mythsentials extends JavaPlugin {
 	public static final Logger log = Logger.getLogger("Minecraft");
 	private static JavaPlugin plugin;
 	private static MythianManager mm;
+	private static StoreManager sm;
+
+	//config constants
+	public boolean MESSAGE_PLAYER;
+	public boolean BROADCAST_TO_SERVER;
+	public boolean LOG_TO_CONSOLE;
+	public List<String> BLACKLIST_PLAYERS;
+	public List<String> BLACKLIST_WORLDS;
 
 	public void onDisable() {
 		log.info("[Mythsentials] Disabled!");
@@ -127,6 +143,7 @@ public class Mythsentials extends JavaPlugin {
 		plugin = this;
 
 		mm = new MythianManager();
+		sm = new StoreManager(this);
 
 		//make sure vault is installed
 		if(!setupVault()) {
@@ -146,6 +163,7 @@ public class Mythsentials extends JavaPlugin {
 		//load flat files
 		loadConfig();
 		loadPlayerData();
+		loadStoreConfig();
 		loadDragonData();
 		loadPircbotLib();
 		loadIRCLogFile();
@@ -161,6 +179,7 @@ public class Mythsentials extends JavaPlugin {
 		jsonapi.getStreamManager().registerStream("irc", ircStream);
 		jsonapi.registerAPICallHandler(new HerochatJSONHandler());
 		jsonapi.registerAPICallHandler(new ResidenceJSONHandler());
+		jsonapi.registerAPICallHandler(new PurchaseHandler());
 
 		//register all the listeners
 		pm.registerEvents(new UnregNotifier(), this);
@@ -180,6 +199,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new IRCEventListener(), this);
 		pm.registerEvents(new AnnouncerListener(), this);
 		pm.registerEvents(new MobCopyListener(), this);
+		pm.registerEvents(new WeatherListener(), this);
 
 		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
@@ -219,6 +239,8 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("runes").setExecutor(new UnenchantCmd(this));
 		getCommand("rune").setExecutor(new UnenchantCmd(this));
 		getCommand("unenchant").setExecutor(new UnenchantCmd(this));
+		getCommand("mythicastore").setExecutor(new StoreCommands(this));
+		getCommand("mw").setExecutor(new WeatherCommands());
 
 		//initiate the utils class
 		new Utils(this);
@@ -273,6 +295,7 @@ public class Mythsentials extends JavaPlugin {
 		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
 		if (economyProvider != null) {
 			economy = economyProvider.getProvider();
+			hasEconPlugin = true;
 		}
 		return (economy != null);
 	}
@@ -344,6 +367,56 @@ public class Mythsentials extends JavaPlugin {
 		}
 		log.info("players.yml detected!");
 	}
+
+	public void loadStoreConfig() {
+
+		ConfigAccessor storeData = new ConfigAccessor("mythica-store.yml");
+		String pluginFolder = this.getDataFolder().getAbsolutePath() + File.separator + "data";	(new File(pluginFolder)).mkdirs();
+		File storeDataF = new File(pluginFolder + File.separator + "mythica-store.yml");
+
+		if (!storeDataF.exists()) {
+			log.info("No mythica-store.yml, making one now...");
+			storeData.saveDefaultConfig();
+			log.info("Done!");
+		} else {
+			log.info("mythica-store.yml detected!");
+		}
+		storeData.reloadConfig();
+
+		MESSAGE_PLAYER = storeData.getConfig().getBoolean("message-player");
+
+		BROADCAST_TO_SERVER = storeData.getConfig().getBoolean("broadcast-to-server");
+
+		LOG_TO_CONSOLE = storeData.getConfig().getBoolean("log-to-console");
+
+		BLACKLIST_PLAYERS = storeData.getConfig().getStringList("blacklisted-players");
+
+		BLACKLIST_WORLDS = storeData.getConfig().getStringList("blacklisted-worlds");
+
+		loadStoreItems();
+
+	}
+
+	public void loadStoreItems() {
+		ConfigAccessor storeData = new ConfigAccessor("mythica-store.yml");
+		sm.clearItems();
+		ConfigurationSection cs = storeData.getConfig().getConfigurationSection("Items");
+		if(cs != null) {
+			for(String itemName : cs.getKeys(false)) {
+				ConfigurationSection itemOptions = cs.getConfigurationSection(itemName);
+				if (itemOptions != null) {
+					StoreItem newItem = new StoreItem(itemName, itemOptions);
+					sm.addItem(newItem);
+					System.out.println("[Mythsentials] Added Store Item: " + itemName);
+					continue;
+				}
+				log.warning("[Mythsentials] The store item \"" + itemName + "\" is empty! Skipping item.");
+			}
+		} else {
+			log.warning("[Mythsentials] Your store item section is empty, no items will be given!");
+		}
+	}
+
 
 	public void loadDragonData() {
 
@@ -473,5 +546,9 @@ public class Mythsentials extends JavaPlugin {
 
 	public static MythianManager getMythianManager() {
 		return mm;
+	}
+
+	public static StoreManager getStoreManager() {
+		return sm;
 	}
 }

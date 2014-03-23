@@ -24,6 +24,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.scoreboard.DisplaySlot;
 
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
+import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.NotificationStreamMessage;
@@ -44,7 +45,6 @@ public class PlayerListener implements Listener {
 		String worldType = MythicaSpawn.getSpawnManager().getWorldType(event.getPlayer().getWorld());
 		if(worldType.equalsIgnoreCase("pvp")) {
 			Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex reload");
-			System.out.println("Reloaded");
 		}
 	}
 
@@ -71,13 +71,12 @@ public class PlayerListener implements Listener {
 
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onQuit(PlayerQuitEvent event) {
-		ConfigAccessor playerData = new ConfigAccessor("players.yml");
+
 		Player p = event.getPlayer();
 		String playerName = p.getDisplayName();
-		Mythsentials.economy.getBalance(playerName);
+
 		Double balance = Mythsentials.economy.getBalance(playerName);
-		playerData.getConfig().set(playerName + ".logoffBalance", balance);
-		playerData.saveConfig();
+		Mythsentials.getMythianManager().getMythian(playerName).setLogoffBalance(balance);
 
 		if(plugin.compassInfoPanels.containsKey(p)) {
 			plugin.compassInfoPanels.get(p).cancel();
@@ -95,44 +94,22 @@ public class PlayerListener implements Listener {
 
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onDeath(PlayerDeathEvent event) {
-		ConfigAccessor playerData = new ConfigAccessor("players.yml");
 		String playerName = event.getEntity().getName();
-		Location death = event.getEntity().getLocation();
-		String deathWorld = event.getEntity().getWorld().getName();
-		String deathLoc = Integer.toString((int) death.getX()) + "," + Integer.toString((int) death.getY()) + "," + Integer.toString((int) death.getZ()) + "," + deathWorld;
-		playerData.getConfig().set(playerName + ".lastDeathLoc", deathLoc);
-		playerData.saveConfig();
+		Mythian mythian = Mythsentials.getMythianManager().getMythian(playerName);
 
-		List<ItemStack> armor = Arrays.asList(event.getEntity().getInventory().getArmorContents());
+		mythian.setLastDeathLoc(event.getEntity().getLocation());
+
 		List<ItemStack> drops = event.getDrops();
 
 		if(drops.size() > 3) {
-			if(!playerData.getConfig().contains(playerName + ".lastDeathDrops")) {
-				playerData.getConfig().createSection(playerName + ".lastDeathDrops");
-				playerData.saveConfig();
-			}
-			List<PlayerDeathDrop> dropsList = Utils.getPlayerDeathDrops(playerName);
-			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Drops", drops);
-			if(armor != null) {
-				if(armor.size() > 0 ) {
-					playerData.getConfig().set(playerName + ".lastDeathDrops.1.Armor", armor);
-				}
-			}
-			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Time", Time.dateAndTimeFromMills(Time.timeInMillis()));
-			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Location", deathLoc);
-			playerData.getConfig().set(playerName + ".lastDeathDrops.1.World", deathWorld);
-			playerData.getConfig().set(playerName + ".lastDeathDrops.1.Reason", event.getDeathMessage().replace(playerName, "").trim());
-			for(int i = 0; i < dropsList.size(); i++) {
-				int dropNum = i + 2;
-				playerData.getConfig().set(playerName + ".lastDeathDrops." + dropNum + ".Drops", dropsList.get(i).getDrops());
-				if(dropsList.get(i).hasArmor()) {
-					playerData.getConfig().set(playerName + ".lastDeathDrops." + dropNum + ".Armor", dropsList.get(i).getArmor());
-				}
-				playerData.getConfig().set(playerName + ".lastDeathDrops."  + dropNum + ".Time", dropsList.get(i).getDeathTime());
-				playerData.getConfig().set(playerName + ".lastDeathDrops." + dropNum + ".Location", dropsList.get(i).getDeathLoc());
-				playerData.getConfig().set(playerName + ".lastDeathDrops."  + dropNum + ".World", dropsList.get(i).getWorld());
-			}
-			playerData.saveConfig();
+
+			Location death = event.getEntity().getLocation();
+			String deathWorld = event.getEntity().getWorld().getName();
+			String deathLoc = Integer.toString((int) death.getX()) + "," + Integer.toString((int) death.getY()) + "," + Integer.toString((int) death.getZ()) + "," + death.getWorld().getName();
+			List<ItemStack> armor = Arrays.asList(event.getEntity().getInventory().getArmorContents());
+
+			PlayerDeathDrop thisDeath = new PlayerDeathDrop(playerName, drops, armor, deathLoc, deathWorld, event.getDeathMessage().replace(playerName, "").trim());
+			mythian.addNewDeathDrop(thisDeath);
 		}
 	}
 

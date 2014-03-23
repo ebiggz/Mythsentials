@@ -1,0 +1,91 @@
+#Mythica Store Config
+
+##########
+#Settings#
+##########
+
+# Whether or not to send a message to a player when they buy an item
+message-player: true
+
+# Whether or not to broadcast to the server when a player buys an item
+broadcast-to-server: true
+
+# Whether or not to log to console when a player votes
+log-to-console: true
+
+#################
+#Store Item Section#
+#################
+
+##   Item List   ##
+#
+# Here you can make multiple item.
+# Each item can have:
+# - a list of item IDs. Each item can have amount, dataID, enchants, name, and lore sections to further customize item!
+# - an amount of money (if Vault is installed)
+# - an amount of xp levels that will be given
+# - worlds that players can claim the item in
+# - a list of commands to be run by the console. %player% will be replaced by the players name.
+# You can leave out any of these options if you do not wish to use them
+# and you can use them in any order
+#
+# REMEMBER: Everything is indented 4 spaces from the next line and you can NOT use tabs
+#
+#Example item#
+#    Awesome Item:                   # Name of the item
+#        items:                        # This one gives 5 diamonds, a diamond sword (with sharpness 5 enchant, 
+#                                      # a custom name, and a lore message), 16 steak, and 32 green wool!
+#            264:
+#                amount: 5
+#            276:
+#                amount: 1
+#                enchants: sharpness(5), looting(3)
+#                name: Wrath of Herobrine
+#                lore: A Mighty Sword
+#            364:
+#                amount: 16
+#            35: 
+#                dataID: 5 
+#                amount: 32
+#            
+#        currency: 100                 # Player will receive $100 in-game currency 
+#        xpLevels: 5                   # Player will gain 5 xp levels
+#        commands:
+#            - gamemode %player% creative   # Players gamemode will be set to creative
+#        message: "&eCongrats %player%! You have received some awesome stuff and got creative mode!"    # This message will display to the player instead of the default one.
+#                # Dont forget the quotes (" ") for the message section!
+#        worlds: main_survival, temp_survival, creative_world
+
+Items:
+# Each item must have a different name
+
+    Ooh Shiny:
+        items:
+            264:
+                amount: 1
+
+#    Lame Item:
+#        items:
+#            3:
+#                amount: 64
+
+#####################
+#Blacklisted Players#
+#####################
+
+# These players will not receive items
+blacklisted-players:
+    - Steve
+    - Herobrine
+
+#####################
+#Blacklisted Worlds#
+#####################
+
+# Players will not receive items in these worlds, ever!
+blacklisted-worlds:
+    - A_World
+    - Another_World
+
+# End of config
+#####################

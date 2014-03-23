@@ -8,12 +8,14 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
@@ -38,7 +40,93 @@ public class Utils {
 		}
 		return false;
 	}
+	public static int getPlayerOpenInvSlots(Player player) {
+		Inventory inv = player.getInventory();
+		ItemStack[] contents = inv.getContents();
+		int count = 0;
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] == null)
+				count++;
+		}
+		return count;
+	}
+	public static boolean worldIsBlacklisted(String worldName) {
+		ConfigAccessor storeData = new ConfigAccessor("mythica-store.yml");
+		List<String> blacklistStr = storeData.getConfig().getStringList("blacklisted-worlds");
+		if(blacklistStr.contains(worldName)) return true;
+		return false;
+	}
+	public static String worldsString(List<String> worlds) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < worlds.size(); i++) {
+			sb.append(worlds.get(i));
+			int lastIndex = worlds.size()-1;
+			if(i < lastIndex-1) {
+				sb.append(", ");
+			}
+			if(i == lastIndex-1) {
+				sb.append(", and ");
+			}
+		}
+		return sb.toString();
+	}
 
+	public static Color getColorEnumFromName(String name) {
+		if(name.equalsIgnoreCase("aqua")) {
+			return Color.AQUA;
+		}
+		if(name.equalsIgnoreCase("black")) {
+			return Color.BLACK;
+		}
+		if(name.equalsIgnoreCase("blue")) {
+			return Color.BLUE;
+		}
+		if(name.equalsIgnoreCase("fuchsia")) {
+			return Color.FUCHSIA;
+		}
+		if(name.equalsIgnoreCase("gray")) {
+			return Color.GRAY;
+		}
+		if(name.equalsIgnoreCase("green")) {
+			return Color.GREEN;
+		}
+		if(name.equalsIgnoreCase("lime")) {
+			return Color.LIME;
+		}
+		if(name.equalsIgnoreCase("maroon")) {
+			return Color.MAROON;
+		}
+		if(name.equalsIgnoreCase("navy")) {
+			return Color.NAVY;
+		}
+		if(name.equalsIgnoreCase("olive")) {
+			return Color.OLIVE;
+		}
+		if(name.equalsIgnoreCase("orange")) {
+			return Color.ORANGE;
+		}
+		if(name.equalsIgnoreCase("purple")) {
+			return Color.PURPLE;
+		}
+		if(name.equalsIgnoreCase("red")) {
+			return Color.RED;
+		}
+		if(name.equalsIgnoreCase("silver")) {
+			return Color.SILVER;
+		}
+		if(name.equalsIgnoreCase("teal")) {
+			return Color.TEAL;
+		}
+		if(name.equalsIgnoreCase("white")) {
+			return Color.WHITE;
+		}
+		if(name.equalsIgnoreCase("yellow")) {
+			return Color.YELLOW;
+		}
+		else {
+			return null;
+		}
+	}
 	public static String getTargetName(Player sender) {
 		Location currentTar = sender.getCompassTarget();
 		String playerName = sender.getName();
