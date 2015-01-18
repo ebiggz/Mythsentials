@@ -5,6 +5,7 @@ import org.bukkit.event.HandlerList;
 
 
 public class AppToChannelEvent extends Event {
+
 	private static final HandlerList handlers = new HandlerList();
 	private String channel, sender, message;
 

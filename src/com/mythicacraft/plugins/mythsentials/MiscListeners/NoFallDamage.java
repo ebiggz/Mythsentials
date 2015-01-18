@@ -12,7 +12,7 @@ public class NoFallDamage implements Listener {
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.getEntity() instanceof Player && event.getCause() == DamageCause.FALL) {
-			if(event.getEntity().getWorld().getName().startsWith("survival") || event.getEntity().getWorld().getName().startsWith("The_Realm") || event.getEntity().getWorld().getName().equalsIgnoreCase("pvp_main_the_end")) {
+			if(event.getEntity().getWorld().getName().startsWith("survival") || event.getEntity().getWorld().getName().startsWith("The_Realm") || event.getEntity().getWorld().getName().equalsIgnoreCase("pvp_main_the_end") || event.getEntity().getWorld().getName().equalsIgnoreCase("minigames")) {
 				event.setCancelled(true);
 			}
 		}

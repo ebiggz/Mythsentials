@@ -87,19 +87,13 @@ public class Registration implements CommandExecutor {
 				sender.sendMessage(ChatColor.GREEN + "You have successfully registered! You will be automatically promoted within a few seconds.");
 				Bukkit.getServer().getScheduler().cancelTask(Integer.parseInt(plugin.taskIDHash.get(player))); //Cancels timeout task
 
+				Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex promote " + player.getName());
+
 				//Clears hash data to remove access to confirm and cancel commands
 				plugin.emailHash.remove(player);
 				plugin.passHash.remove(player);
 				plugin.taskIDHash.remove(player);
 
-				//Schedules automatic sync with forums 5 seconds after registration confirmation
-				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-					public void run() {
-						player.performCommand("cbsync");
-					} //end void run()
-				} //end bukkit start scheduler
-				, 100L);
-				return true;
 			}
 			else{
 				sender.sendMessage(ChatColor.RED + "You do not have permissions to use this command");

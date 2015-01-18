@@ -102,7 +102,7 @@ public class IRCUtils {
 	public static boolean userIsInIRC(String username) {
 		IRCBot bot = IRCBot.getBot();
 		ArrayList<User> usersO = new ArrayList<User>(Arrays.asList(bot.getUsers("#MythicaCraft")));
-		ArrayList<User> users1 = new ArrayList<User>(Arrays.asList(bot.getUsers("#MythicaStaff")));
+		ArrayList<User> users1 = new ArrayList<User>(Arrays.asList(bot.getUsers("##MythicaStaff")));
 		ArrayList<String> users = new ArrayList<String>();
 		for(User user: usersO) {
 			users.add(user.getNick());
@@ -120,6 +120,27 @@ public class IRCUtils {
 			if(user.getNick().equals(nick)) return user;
 		}
 		return null;
+	}
+
+	public static String[] getMods() {
+		IRCBot bot = IRCBot.getBot();
+		ArrayList<User> usersO = new ArrayList<User>(Arrays.asList(bot.getUsers("#MythicaCraft")));
+		ArrayList<User> users1 = new ArrayList<User>(Arrays.asList(bot.getUsers("##MythicaStaff")));
+		ArrayList<String> users = new ArrayList<String>();
+		for(User user: usersO) {
+			if(user.isOp()) {
+				if(users.contains(user.getNick())) continue;
+				if(user.getNick().equalsIgnoreCase("[ModChat]") || user.getNick().equalsIgnoreCase("[Global]") || user.getNick().equalsIgnoreCase("Spirebot")) continue;
+				users.add(user.getNick());
+			}
+		}
+		for(User user: users1) {
+			if(users.contains(user.getNick())) continue;
+			users.add(user.getNick());
+		}
+		String[] mods = new String[users.size()];
+		users.toArray(mods);
+		return mods;
 	}
 
 	public static String completePlayerName(String playername) {

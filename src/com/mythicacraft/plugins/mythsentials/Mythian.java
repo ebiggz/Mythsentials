@@ -6,6 +6,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -51,9 +53,69 @@ public class Mythian {
 		return playerData.getConfig().getInt("runes", 0);
 	}
 
+	public boolean hasLogoffXP() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().contains("logoffXP");
+	}
+
+	public int getLogoffXP() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().getInt("logoffXP", 0);
+	}
+
+	public void setLogoffXP(int amount) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("logoffXP", amount);
+		playerData.saveConfig();
+	}
+
+	public void addRecentCommand(String command) {
+		List<String> commands = getRecentCommands();
+		commands.add(0, command);
+		while(commands.size() > 10) {
+			commands.remove(commands.size()-1);
+		}
+		setRecentCommands(commands);
+	}
+
+	public void setRecentCommands(List<String> commands) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("recentCommands", commands);
+		playerData.saveConfig();
+	}
+
+	public List<String> getRecentCommands() {
+		List<String> commands = new ArrayList<String>();
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		commands = playerData.getConfig().getStringList("recentCommands");
+		return commands;
+	}
+
 	public void setRunes(int amount) {
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		playerData.getConfig().set("runes", amount);
+		playerData.saveConfig();
+	}
+
+	public void setCensorChat(boolean shouldCensor) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("censorChat", shouldCensor);
+		playerData.saveConfig();
+	}
+
+	public boolean getCensorChat() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().getBoolean("censorChat", false);
+	}
+
+	public boolean getCensorChatGlobal() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().getBoolean("censorChatGlobal", false);
+	}
+
+	public void setCensorChatGlobal(boolean shouldCensor) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("censorChatGlobal", shouldCensor);
 		playerData.saveConfig();
 	}
 
@@ -149,10 +211,11 @@ public class Mythian {
 
 	public void addNewDeathDrop(PlayerDeathDrop playerDeathDrop) {
 		List<PlayerDeathDrop> allDeathDrops = getDeathDrops();
-		allDeathDrops.add(0, playerDeathDrop);
+		allDeathDrops.add(playerDeathDrop);
 		while(allDeathDrops.size() >= 10) {
 			allDeathDrops.remove(allDeathDrops.size()-1);
 		}
+		Collections.sort(allDeathDrops);
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		for(int i = 0; i < allDeathDrops.size(); i++) {
 			int dropNum = i + 1;
@@ -161,10 +224,11 @@ public class Mythian {
 				playerData.getConfig().set("lastDeathDrops." + dropNum + ".Armor", allDeathDrops.get(i).getArmor());
 			}
 			playerData.getConfig().set("lastDeathDrops."  + dropNum + ".Time", allDeathDrops.get(i).getDeathTime());
+			playerData.getConfig().set("lastDeathDrops."  + dropNum + ".Reason", allDeathDrops.get(i).getReason());
 			playerData.getConfig().set("lastDeathDrops." + dropNum + ".Location", allDeathDrops.get(i).getDeathLoc());
 			playerData.getConfig().set("lastDeathDrops."  + dropNum + ".World", allDeathDrops.get(i).getWorld());
+			playerData.saveConfig();
 		}
-		playerData.saveConfig();
 	}
 
 	public void setLastDeathLoc(Location death) {
@@ -188,6 +252,48 @@ public class Mythian {
 		return death;
 	}
 
+	public List<String> getFriendList() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		List<String> friends = new ArrayList<String>();
+		if(playerData.getConfig().contains("friends.list")) {
+			friends = playerData.getConfig().getStringList("friends.list");
+		}
+		return friends;
+	}
+
+	public boolean isFriendsWith(String friend) {
+		return getFriendList().contains(friend);
+	}
+
+	public void removeFriend(String friend) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		List<String> friends = this.getFriendList();
+		friends.remove(friend);
+		playerData.getConfig().set("friends.list", friends);
+		playerData.saveConfig();
+	}
+
+	public void addFriend(String friend) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		List<String> friends = this.getFriendList();
+		if(!friends.contains(friend)) {
+			friends.add(friend);
+		}
+		playerData.getConfig().set("friends.list", friends);
+		playerData.saveConfig();
+	}
+
+	public void setAcceptFriendRequests(boolean isAccepting) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("friends.accept-requests", isAccepting);
+		playerData.saveConfig();
+	}
+
+	public boolean isAcceptingFriendRequests() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().getBoolean("friends.accept-requests", true);
+	}
+
 	public void setLogoffBalance(double balance) {
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		playerData.getConfig().set("logoffBalance", balance);
@@ -207,6 +313,91 @@ public class Mythian {
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		playerData.getConfig().set("joinTime", time);
 		playerData.saveConfig();
+	}
+
+	public boolean hasNewLoginLoc() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		if(playerData.getConfig().contains("newLoginLoc")) return true;
+		return false;
+	}
+
+	public Location getNewLoginLoc() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		if(playerData.getConfig().contains("newLoginLoc")) {
+			String[] points = playerData.getConfig().getString("newLoginLoc").split(",");
+			World world = Bukkit.getWorld(points[3]);
+			return new Location(world, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
+		}
+		return null;
+	}
+
+	public void setNewLoginLoc(Location location) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		if(location != null) {
+			String loginLocStr = Integer.toString((int) location.getX()) + "," + Integer.toString((int) location.getY()) + "," + Integer.toString((int) location.getZ()) + "," + location.getWorld().getName();
+			playerData.getConfig().set("newLoginLoc", loginLocStr);
+		} else {
+			playerData.getConfig().set("newLoginLoc", null);
+		}
+		playerData.saveConfig();
+	}
+
+	public Set<String> getCompassTargetNames() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		Set<String> playerTargets = null;
+		if(playerData.getConfig().contains("compassTargets")) {
+			playerTargets = playerData.getConfig().getConfigurationSection("compassTargets").getKeys(false);
+		}
+		return playerTargets;
+	}
+
+	public Location getCompassTarget(String name) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		String targetData = playerData.getConfig().getString("compassTargets." + name, "");
+		if(targetData.isEmpty()) return null;
+		String[] points = targetData.split(",");
+		World targetWorld = Bukkit.getWorld(points[3]);
+		return new Location(targetWorld, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
+	}
+
+	public boolean hasCompassTarget(String name) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().contains("compassTargets." + name);
+	}
+
+	public void removeCompassTarget(String name) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		Map<String, Object> targets = null;
+		targets = playerData.getConfig().getConfigurationSection("compassTargets").getValues(false);
+		if (targets != null) {
+			if(targets.containsKey(name)) {
+				targets.remove(name);
+				playerData.getConfig().set("compassTargets", targets);
+				playerData.saveConfig();
+			}
+		}
+	}
+
+	public void saveCompassTarget(String name, Location targetLoc) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		String worldName = targetLoc.getWorld().getName();
+		String newTarget = Integer.toString((int) targetLoc.getX()) + "," + Integer.toString((int) targetLoc.getY()) + "," + Integer.toString((int) targetLoc.getZ()) + "," + worldName;
+		playerData.getConfig().set("compassTargets." + name, newTarget);
+		playerData.saveConfig();
+	}
+
+	public void renameCompassTarget(String oldName, String newName) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		Map<String, Object> targets = null;
+		targets = playerData.getConfig().getConfigurationSection("compassTargets").getValues(false);
+		if (targets != null) {
+			if(targets.containsKey(oldName)) {
+				targets.put(newName, targets.get(oldName));
+				targets.remove(oldName);
+				playerData.getConfig().set(playerName + ".compassTargets", targets);
+				playerData.saveConfig();
+			}
+		}
 	}
 
 	private void createFile(String path, String fileName) {

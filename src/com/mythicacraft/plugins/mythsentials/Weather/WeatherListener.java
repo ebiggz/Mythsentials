@@ -43,17 +43,15 @@ public class WeatherListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onLogin(WeatherChangeEvent event) {
-		if(!event.isCancelled()) {
-			if(event.toWeatherState()) {
-				World w = event.getWorld();
-				for(Player player : w.getPlayers()) {
-					Mythian mythian = Mythsentials.getMythianManager().getMythian(player.getName());
-					if(player.getWorld().hasStorm()) {
-						if(mythian.getAutohideWeather()) {
-							player.setPlayerWeather(WeatherType.CLEAR);
-							player.sendMessage(ChatColor.AQUA + "It started storming but the weather has been autohidden.");
-						}
+	public void onStorm(WeatherChangeEvent event) {
+		if(event.toWeatherState()) {
+			World w = event.getWorld();
+			for(Player player : w.getPlayers()) {
+				Mythian mythian = Mythsentials.getMythianManager().getMythian(player.getName());
+				if(player.getWorld().hasStorm()) {
+					if(mythian.getAutohideWeather()) {
+						player.setPlayerWeather(WeatherType.CLEAR);
+						player.sendMessage(ChatColor.AQUA + "It started storming but the weather has been autohidden.");
 					}
 				}
 			}

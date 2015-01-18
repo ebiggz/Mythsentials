@@ -29,6 +29,7 @@ public class ResMax implements CommandExecutor {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	private int getMaxSize(Player player) {
 		String[] groups = PermissionsEx.getUser(player).getGroupsNames();
 		String group = groups[0];

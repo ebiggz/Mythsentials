@@ -36,16 +36,28 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
 import com.alecgorge.minecraft.jsonapi.JSONAPI;
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
 import com.mythicacraft.plugins.mythsentials.AdminTools.AdminTools;
 import com.mythicacraft.plugins.mythsentials.AdminTools.MobCopyListener;
+import com.mythicacraft.plugins.mythsentials.AdminTools.PIMenuData;
+import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerInfoListener;
 import com.mythicacraft.plugins.mythsentials.Affixer.AffixerCmds;
 import com.mythicacraft.plugins.mythsentials.Announcer.AnnouncerListener;
+import com.mythicacraft.plugins.mythsentials.Censor.CensorCommands;
+import com.mythicacraft.plugins.mythsentials.Censor.CensorListener;
+import com.mythicacraft.plugins.mythsentials.Censor.CensoredWord;
+import com.mythicacraft.plugins.mythsentials.Compass.CompassInfoPanel;
 import com.mythicacraft.plugins.mythsentials.Compass.CompassTarget;
+import com.mythicacraft.plugins.mythsentials.Compass.PlayerTarget;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonChecker;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonListener;
-import com.mythicacraft.plugins.mythsentials.JsonAPI.AppCommuncatior;
+import com.mythicacraft.plugins.mythsentials.Friends.FriendsCmds;
+import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIListener;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.ChannelChat;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.HerochatJSONHandler;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.JsonStream;
@@ -57,6 +69,7 @@ import com.mythicacraft.plugins.mythsentials.MiscCommands.RepairCmd;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.ResMax;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.ResTool;
 import com.mythicacraft.plugins.mythsentials.MiscCommands.TestCmds;
+import com.mythicacraft.plugins.mythsentials.MiscCommands.TwitterCmds;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.BedrockBlocker;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.BoatListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.ChatListener;
@@ -68,12 +81,18 @@ import com.mythicacraft.plugins.mythsentials.MiscListeners.NoFallDamage;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.PlayerListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.UnleashListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.UnregNotifier;
+import com.mythicacraft.plugins.mythsentials.MythiboardAPI.BoardListener;
+import com.mythicacraft.plugins.mythsentials.MythiboardAPI.MythiboardManager;
+import com.mythicacraft.plugins.mythsentials.MythiboardEntries.BankSBEntry;
+import com.mythicacraft.plugins.mythsentials.MythiboardEntries.FriendsSBEntry;
+import com.mythicacraft.plugins.mythsentials.MythiboardEntries.StaffSBEntry;
 import com.mythicacraft.plugins.mythsentials.Pets.PetCmdProperties;
 import com.mythicacraft.plugins.mythsentials.Pets.PetCmds;
 import com.mythicacraft.plugins.mythsentials.Pets.PetSelectListener;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCBot;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCCommands;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCEventListener;
+import com.mythicacraft.plugins.mythsentials.Store.PurchaseCmds;
 import com.mythicacraft.plugins.mythsentials.Store.PurchaseHandler;
 import com.mythicacraft.plugins.mythsentials.Store.StoreCommands;
 import com.mythicacraft.plugins.mythsentials.Store.StoreItem;
@@ -94,20 +113,32 @@ public class Mythsentials extends JavaPlugin {
 	public String edKiller;
 	public HashMap<Integer, Boolean> tools;
 	public HashMap<Integer, Boolean> armor;
+	public HashMap<Player, Player> trackRequests = new HashMap<Player, Player>();
+	public HashMap<Player, PlayerTarget> playerTargets = new HashMap<Player, PlayerTarget>();
 	public HashMap<Player, BukkitTask> playerTrackers = new HashMap<Player, BukkitTask>();
-	public HashMap<Player, BukkitTask> compassInfoPanels = new HashMap<Player, BukkitTask>();
+	public HashMap<Player, CompassInfoPanel> compassInfoPanels = new HashMap<Player, CompassInfoPanel>();
 	public final HashMap<Player, String> emailHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> passHash = new HashMap<Player, String>();
 	public final HashMap<Player, String> taskIDHash = new HashMap<Player, String>();
 	public static HashMap<Player,PetCmdProperties> petSelector = new HashMap<Player,PetCmdProperties>();
 	public static List<Player> mobCopy = new ArrayList<Player>();
 	public static HashMap<Player, Entity> copiedMob = new HashMap<Player, Entity>();
+	public static List<CensoredWord> censoredWords = new ArrayList<CensoredWord>();
+	public static List<CensoredWord> censoredWordsFunny = new ArrayList<CensoredWord>();
+	public static List<Player> permissionsReloaded = new ArrayList<Player>();
+	public static HashMap<Player, Player> friendRequests = new HashMap<Player, Player>();
+
+	public static HashMap<Player, PIMenuData> playerInfoMenus = new HashMap<Player, PIMenuData>();
+
+	private static HashMap<String, String> worldAndGamemodes = new HashMap<String, String>();
 
 	public static Economy economy = null;
 	public static Chat chat = null;
 	public static Permission permission = null;
 	public static boolean hasPermPlugin = true;
 	public static boolean hasEconPlugin = false;
+
+	public static boolean shouldCensor = true;
 
 	private JSONAPI jsonapi;
 	public static JSONAPIStream notificationStream = new JsonStream("notifications");
@@ -124,6 +155,7 @@ public class Mythsentials extends JavaPlugin {
 	private static JavaPlugin plugin;
 	private static MythianManager mm;
 	private static StoreManager sm;
+	private static Twitter t;
 
 	//config constants
 	public boolean MESSAGE_PLAYER;
@@ -133,6 +165,9 @@ public class Mythsentials extends JavaPlugin {
 	public List<String> BLACKLIST_WORLDS;
 
 	public void onDisable() {
+
+		IRCBot.getBot().disconnect();
+
 		log.info("[Mythsentials] Disabled!");
 	}
 
@@ -170,6 +205,7 @@ public class Mythsentials extends JavaPlugin {
 		loadPeriodicAnnouncements();
 		loadLoginAnnouncements();
 
+
 		//make irc spirebot
 		IRCBot.makeBot();
 
@@ -180,6 +216,7 @@ public class Mythsentials extends JavaPlugin {
 		jsonapi.registerAPICallHandler(new HerochatJSONHandler());
 		jsonapi.registerAPICallHandler(new ResidenceJSONHandler());
 		jsonapi.registerAPICallHandler(new PurchaseHandler());
+
 
 		//register all the listeners
 		pm.registerEvents(new UnregNotifier(), this);
@@ -196,10 +233,14 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new ChatListener(), this);
 		pm.registerEvents(new PetSelectListener(), this);
 		pm.registerEvents(new ChannelChat(), this);
+		pm.registerEvents(new PlayerInfoListener(), this);
 		pm.registerEvents(new IRCEventListener(), this);
 		pm.registerEvents(new AnnouncerListener(), this);
 		pm.registerEvents(new MobCopyListener(), this);
 		pm.registerEvents(new WeatherListener(), this);
+		pm.registerEvents(new CensorListener(), this);
+		pm.registerEvents(new BoardListener(), this);
+		pm.registerEvents(new GUIListener(), this);
 
 		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
@@ -208,11 +249,18 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("cancel").setExecutor(new Registration(this));
 		getCommand("helpme").setExecutor(new HelpMe());
 		getCommand("playerinfo").setExecutor(new AdminTools());
+		getCommand("pi").setExecutor(new AdminTools());
+		getCommand("chunkcheck").setExecutor(new AdminTools());
 		getCommand("deathdrops").setExecutor(new AdminTools());
 		getCommand("loginlocation").setExecutor(new AdminTools());
 		getCommand("mobselect").setExecutor(new AdminTools());
 		getCommand("mobtp").setExecutor(new AdminTools());
 		getCommand("compass").setExecutor(new CompassTarget(this));
+		getCommand("sure").setExecutor(new CompassTarget(this));
+		getCommand("nah").setExecutor(new CompassTarget(this));
+		getCommand("creep").setExecutor(new CompassTarget(this));
+		getCommand("trackers").setExecutor(new CompassTarget(this));
+		getCommand("stoptrack").setExecutor(new CompassTarget(this));
 		getCommand("modhelp").setExecutor(new HelpMe());
 		getCommand("adminhelp").setExecutor(new HelpMe());
 		getCommand("mod").setExecutor(new HelpMe());
@@ -241,13 +289,36 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("unenchant").setExecutor(new UnenchantCmd(this));
 		getCommand("mythicastore").setExecutor(new StoreCommands(this));
 		getCommand("mw").setExecutor(new WeatherCommands());
+		getCommand("censorchat").setExecutor(new CensorCommands());
+		getCommand("twitter").setExecutor(new TwitterCmds());
+		getCommand("store").setExecutor(new PurchaseCmds());
+		getCommand("friends").setExecutor(new FriendsCmds());
+
+		addCensoredWords();
+		addCensoredWordsFunny();
 
 		//initiate the utils class
 		new Utils(this);
 
 		//start thread to talk to connected desktop client
-		Thread appCommun = new AppCommuncatior();
-		appCommun.start();
+		/*Thread appCommun = new AppCommuncatior();
+		appCommun.start();*/
+
+		MythiboardManager boardManager = Mythsentials.getMythiboardManager();
+		boardManager.registerScoreboardEntry(new BankSBEntry());
+		//boardManager.registerScoreboardEntry(new BalanceSBEntry());
+		boardManager.registerScoreboardEntry(new FriendsSBEntry());
+		boardManager.registerScoreboardEntry(new StaffSBEntry());
+
+		//connect to twitter
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		.setOAuthConsumerKey("954QT1dFdaU5NzKHBSybYw")
+		.setOAuthConsumerSecret("dSKfyCZwhfdvHFp5FhgYOZkc120RQhwyoBEXSqhMI")
+		.setOAuthAccessToken("935557807-FO6dxsp5RU7l6Gd9cwlKCIfWOr4MeMUIjENVD8ub")
+		.setOAuthAccessTokenSecret("DFFrcsxvucrzayqPSQKyJKP5NsjwhuKiY2jTac3FlScUz");
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		t = tf.getInstance();
 
 		//start announcements schedule
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
@@ -263,6 +334,13 @@ public class Mythsentials extends JavaPlugin {
 				}
 			}
 		}, announcementInterval, announcementInterval);
+
+		scheduler.scheduleSyncDelayedTask(Mythsentials.getPlugin(), new Runnable() {
+			@Override
+			public void run() {
+				Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "ircreload");
+			}
+		}, 600L);
 
 		//finished
 		log.info("[Mythsentials] Enabled!");
@@ -347,6 +425,17 @@ public class Mythsentials extends JavaPlugin {
 				if (arm.equals("")) continue;
 				armor.put(Integer.parseInt(arm), true);
 			}
+
+			//load World/Gametype Relationships
+			ConfigurationSection worldGametypeSection = getConfig().getConfigurationSection("world-gametype");
+			Mythsentials.worldAndGamemodes.clear();
+			if(worldGametypeSection != null) {
+				for(String world : worldGametypeSection.getKeys(false)) {
+					String gameType = worldGametypeSection.getString(world);
+					Mythsentials.worldAndGamemodes.put(world, gameType);
+				}
+			}
+
 			saveConfig();
 		} catch (Exception e) {
 			log.log(Level.SEVERE, "Exception while loading Mythsentials/config.yml", e);
@@ -358,7 +447,6 @@ public class Mythsentials extends JavaPlugin {
 		ConfigAccessor playerData = new ConfigAccessor("players.yml");
 		String pluginFolder = this.getDataFolder().getAbsolutePath() + File.separator + "data";	(new File(pluginFolder)).mkdirs();
 		File moneyTracConfigF = new File(pluginFolder + File.separator + "players.yml");
-
 		if (!moneyTracConfigF.exists()) {
 			log.info("No players.yml, making one now...");
 			playerData.saveDefaultConfig();
@@ -436,7 +524,8 @@ public class Mythsentials extends JavaPlugin {
 	public void loadPircbotLib() {
 		try {
 			final File[] libs = new File[] {
-					new File(getDataFolder() + File.separator + "data" + File.separator + "libs", "pircbot.jar")};
+					new File(getDataFolder() + File.separator + "data" + File.separator + "libs", "pircbot.jar"),
+					new File(getDataFolder() + File.separator + "data" + File.separator + "libs", "twitter4j-core-4.0.2.jar")};
 			for (final File lib : libs) {
 				if (!lib.exists()) {
 					JarUtils.extractFromJar(lib.getName(),
@@ -544,11 +633,120 @@ public class Mythsentials extends JavaPlugin {
 		}
 	}
 
+	private static void addCensoredWords() {
+
+		censoredWords.add(new CensoredWord("fuck", "freak", false));
+		censoredWords.add(new CensoredWord("hell", "heck", true));
+		censoredWords.add(new CensoredWord("ass", "butt", true));
+		censoredWords.add(new CensoredWord("asshole", "butthead", false));
+		censoredWords.add(new CensoredWord("asshat", "butthead", false));
+		censoredWords.add(new CensoredWord("asswipe", "buttwipe", false));
+		censoredWords.add(new CensoredWord("jackass", "donkey", false));
+		censoredWords.add(new CensoredWord("shit", "crap", false));
+		censoredWords.add(new CensoredWord("nigger", "guy", false));
+		censoredWords.add(new CensoredWord("nigga", "dude", false));
+		censoredWords.add(new CensoredWord("nig", "dude", true));
+		censoredWords.add(new CensoredWord("bastard", "jerk", false));
+		censoredWords.add(new CensoredWord("dick", "jerk", false));
+		censoredWords.add(new CensoredWord("pussy", "wuss", false));
+		censoredWords.add(new CensoredWord("sex", "tickles", false));
+		censoredWords.add(new CensoredWord("cock", "rooster", false));
+		censoredWords.add(new CensoredWord("suck", "stink", false));
+		censoredWords.add(new CensoredWord("penis", "winkie", false));
+		censoredWords.add(new CensoredWord("vagina", "flower", false));
+		censoredWords.add(new CensoredWord("bitch", "lame-o", false));
+		censoredWords.add(new CensoredWord("betch", "lame-o", false));
+		censoredWords.add(new CensoredWord("damn", "dang", false));
+		censoredWords.add(new CensoredWord("cum", "leak", false));
+		censoredWords.add(new CensoredWord("jizz", "leak", false));
+		censoredWords.add(new CensoredWord("sperm", "swimmers", false));
+		censoredWords.add(new CensoredWord("fag", "cool guy", false));
+		censoredWords.add(new CensoredWord("faggot", "cool guy", false));
+		censoredWords.add(new CensoredWord("piss", "tinkle", false));
+		censoredWords.add(new CensoredWord("whore", "princess", false));
+		censoredWords.add(new CensoredWord("skank", "woman of high values", false));
+		censoredWords.add(new CensoredWord("slut", "woman of high values", false));
+		censoredWords.add(new CensoredWord("horny", "thorny", false));
+		censoredWords.add(new CensoredWord("spic", "person good with math", false));
+		censoredWords.add(new CensoredWord("beaner", "person good with landscaping", false));
+		censoredWords.add(new CensoredWord("god", "goodness gracious", false));
+		censoredWords.add(new CensoredWord("tit", "bodacious chest", true));
+		censoredWords.add(new CensoredWord("tits", "bodacious chest", true));
+		censoredWords.add(new CensoredWord("boob", "bodacious chest", true));
+		censoredWords.add(new CensoredWord("boobs", "bodacious chest", true));
+		censoredWords.add(new CensoredWord("breast", "bodacious chest", false));
+		censoredWords.add(new CensoredWord("god", "gosh", false, true));
+
+	}
+
+	private static void addCensoredWordsFunny() {
+
+		censoredWordsFunny.add(new CensoredWord("fucking", "finger-lick", false));
+		censoredWordsFunny.add(new CensoredWord("fuck", "fork", false));
+		censoredWordsFunny.add(new CensoredWord("hell", "h-e double hockey sticks", true));
+		censoredWordsFunny.add(new CensoredWord("ass", "tooshie", true));
+		censoredWordsFunny.add(new CensoredWord("asshole", "silly guy", false));
+		censoredWordsFunny.add(new CensoredWord("jackass", "donkey", false));
+		censoredWordsFunny.add(new CensoredWord("asshat", "butthead", false));
+		censoredWordsFunny.add(new CensoredWord("asswipe", "buttwipe", false));
+		censoredWordsFunny.add(new CensoredWord("shit", "amazing", false));
+		censoredWordsFunny.add(new CensoredWord("nigger", "lovely people", false));
+		censoredWordsFunny.add(new CensoredWord("nigga", "lovely person", false));
+		censoredWordsFunny.add(new CensoredWord("nig", "dear friend", true));
+		censoredWordsFunny.add(new CensoredWord("bastard", "dingus", false));
+		censoredWordsFunny.add(new CensoredWord("dick", "nice", false));
+		censoredWordsFunny.add(new CensoredWord("pussy", "kittycat", false));
+		censoredWordsFunny.add(new CensoredWord("sex", "tickles", false));
+		censoredWordsFunny.add(new CensoredWord("cock", "rooster", false));
+		censoredWordsFunny.add(new CensoredWord("suck", "stink", false));
+		censoredWordsFunny.add(new CensoredWord("penis", "winkie", false));
+		censoredWordsFunny.add(new CensoredWord("vagina", "flower", false));
+		censoredWordsFunny.add(new CensoredWord("cunt", "sparkley lemon", false));
+		censoredWordsFunny.add(new CensoredWord("bitch", "good friend", false));
+		censoredWordsFunny.add(new CensoredWord("betch", "good friend", false));
+		censoredWordsFunny.add(new CensoredWord("damn", "darn", false));
+		censoredWordsFunny.add(new CensoredWord("cum", "leak", false));
+		censoredWordsFunny.add(new CensoredWord("jizz", "leak", false));
+		censoredWordsFunny.add(new CensoredWord("sperm", "swimmers", false));
+		censoredWordsFunny.add(new CensoredWord("tit", "bodacious chest", true));
+		censoredWordsFunny.add(new CensoredWord("tits", "bodacious chest", true));
+		censoredWordsFunny.add(new CensoredWord("boob", "bodacious chest", true));
+		censoredWordsFunny.add(new CensoredWord("boobs", "bodacious chest", true));
+		censoredWordsFunny.add(new CensoredWord("breast", "bodacious chest", false));
+		censoredWordsFunny.add(new CensoredWord("fag", "cool guy", false));
+		censoredWordsFunny.add(new CensoredWord("faggot", "cool guy", false));
+		censoredWordsFunny.add(new CensoredWord("piss", "tinkle", false));
+		censoredWordsFunny.add(new CensoredWord("whore", "princess", false));
+		censoredWordsFunny.add(new CensoredWord("skank", "woman of high values", false));
+		censoredWordsFunny.add(new CensoredWord("slut", "woman of high values", false));
+		censoredWordsFunny.add(new CensoredWord("horny", "thorny", false));
+		censoredWordsFunny.add(new CensoredWord("spic", "person good with math", false));
+		censoredWordsFunny.add(new CensoredWord("beaner", "person good with landscaping", false));
+		censoredWordsFunny.add(new CensoredWord("god", "goodness gracious", false, true));
+
+	}
+
+	public static String getGameTypeForWorld(String worldName) {
+		if(Mythsentials.worldAndGamemodes.containsKey(worldName)) {
+			return Mythsentials.worldAndGamemodes.get(worldName);
+		} else {
+			return null;
+		}
+	}
+
 	public static MythianManager getMythianManager() {
 		return mm;
 	}
 
 	public static StoreManager getStoreManager() {
 		return sm;
+	}
+
+	public static Twitter getTwitter(){
+		return t;
+	}
+
+	public static MythiboardManager getMythiboardManager(){
+		return MythiboardManager.getInstance();
 	}
 }

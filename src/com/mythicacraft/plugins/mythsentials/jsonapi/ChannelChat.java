@@ -7,7 +7,6 @@ import org.bukkit.event.Listener;
 
 import com.alecgorge.minecraft.jsonapi.api.JSONAPIStream;
 import com.dthielke.herochat.ChannelChatEvent;
-import com.dthielke.herochat.Chatter.Result;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCToChannelEvent;
 
@@ -19,10 +18,10 @@ public class ChannelChat implements Listener{
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onChat(ChannelChatEvent e) {
-		if(e.getResult() == Result.ALLOWED) {
-			HerochatStreamMessage streamMessage = new HerochatStreamMessage(e.getChannel().getName(), e.getSender().getName(), ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&',e.getMessage())));
-			herochatStream.addMessage(streamMessage);
-		}
+
+		HerochatStreamMessage streamMessage = new HerochatStreamMessage(e.getChannel().getName(), e.getSender().getName(), ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&',e.getMessage())));
+		herochatStream.addMessage(streamMessage);
+
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)

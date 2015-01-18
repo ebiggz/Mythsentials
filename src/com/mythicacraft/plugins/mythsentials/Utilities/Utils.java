@@ -5,23 +5,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.kitteh.vanish.staticaccess.VanishNoPacket;
+import org.kitteh.vanish.staticaccess.VanishNotLoadedException;
+
+import twitter4j.Paging;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
 
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.gmail.mythicacraft.mythicaspawn.SpawnManager;
+import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
+import com.mythicacraft.plugins.mythsentials.Censor.CensoredWord;
 
 public class Utils {
 
@@ -32,9 +42,60 @@ public class Utils {
 		Utils.plugin = plugin;
 	}
 
+	public static void reloadPexSmartly(Player player) {
+		if(!Mythsentials.permissionsReloaded.contains(player)) {
+			Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex reload");
+			for(Player p : Bukkit.getOnlinePlayers()) {
+				if(!Mythsentials.permissionsReloaded.contains(p)) {
+					Mythsentials.permissionsReloaded.add(p);
+				}
+			}
+		}
+	}
+
+	public static String getLastTweet() {
+		Twitter twitter = Mythsentials.getTwitter();
+		List<Status> statuses;
+		try {
+			Paging paging = new Paging(1, 25);
+			statuses = twitter.getUserTimeline(paging);
+		} catch (TwitterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		for (Status status : statuses) {
+			if(status.getText().startsWith("@")) continue;
+			return status.getText();
+		}
+		return "";
+	}
+
+	public static ArrayList<String> getRecentTweets() {
+		Twitter twitter = Mythsentials.getTwitter();
+		List<Status> statuses;
+		try {
+			Paging paging = new Paging(1, 25);
+			statuses = twitter.getUserTimeline(paging);
+		} catch (TwitterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new ArrayList<String>();
+		}
+		ArrayList<String> notMentions = new ArrayList<String>();
+		for (Status status : statuses) {
+			if(status.getText().startsWith("@")) continue;
+			notMentions.add(status.getText());
+			if(notMentions.size() >= 5) break;
+		}
+		return notMentions;
+	}
+
 	public static Boolean modsOnline() {
 		for(Player player: plugin.getServer().getOnlinePlayers()) {
 			if(player.hasPermission("mythica.helpreceive")) {
+				try {
+					if(VanishNoPacket.isVanished(player.getName())) continue; } catch (VanishNotLoadedException e) {}
 				return true;
 			}
 		}
@@ -128,68 +189,73 @@ public class Utils {
 		}
 	}
 	public static String getTargetName(Player sender) {
+
 		Location currentTar = sender.getCompassTarget();
 		String playerName = sender.getName();
-		ConfigAccessor playerData = new ConfigAccessor("players.yml");
 		SpawnManager sm = MythicaSpawn.getSpawnManager();
+		Mythian mythian = Mythsentials.getMythianManager().getMythian(playerName);
 
-		if(currentTar == sm.getPlayerSurvivalBed(sender)) {
+		if(currentTar.equals(sm.getPlayerSurvivalBed(sender))) {
 			return "Survival Bed";
 		}
 
-		if(currentTar == sm.getPlayerPvpBed(sender)) {
+		if(currentTar.equals(sm.getPlayerPvpBed(sender))) {
 			return "Pvp Bed";
 		}
 
-		if(currentTar == sm.getPvpSpawn()) {
+		if(currentTar.equals(sm.getPvpSpawn())) {
 			return "PvP Spawn";
 		}
 
-		if(currentTar == sm.getSurvivalSpawn()) {
+		if(currentTar.equals(sm.getSurvivalSpawn())) {
 			return "Survival Spawn";
 		}
 
-		if(plugin.playerTrackers.containsKey(sender)) {
-			if(playerData.getConfig().contains(playerName + ".playerTrack")) {
-				String playerTrack = playerData.getConfig().getString(playerName + ".playerTrack");
-				return playerTrack;
-			}
+		Player trackingPlayer = Utils.getTrackingPlayer(sender);
+		if(trackingPlayer != null) {
+			return trackingPlayer.getName();
 		}
-		if(playerData.getConfig().contains(playerName + ".lastDeathLoc")) {
-			String[] points = playerData.getConfig().getString(playerName + ".lastDeathLoc").split(",");
-			World deathWorld = Bukkit.getWorld(points[3]);
-			Location death = new Location(deathWorld, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
-			if(currentTar == death) {
+
+		Location lastDeath = mythian.getLastDeathLoc();
+		if(lastDeath != null) {
+			if(currentTar.equals(lastDeath)) {
 				return "Last Death";
 			}
 		}
 
-		Set<String> targets = null;
-		if (playerData.getConfig().contains(playerName + ".compassTargets")) {
-			targets = playerData.getConfig().getConfigurationSection(playerName + ".compassTargets").getKeys(false);
-			if (targets != null) {
-				for (String targetName : targets) {
-					if(targetName != null) {
-						String[] points = playerData.getConfig().getString(playerName + ".compassTargets." + targetName).split(",");
-						if(points.length >= 4) {
-							World targetWorld = Bukkit.getWorld(points[3]);
-							Location targetLoc = new Location(targetWorld, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
-							if(currentTar == targetLoc) {
-								return targetName;
-							}
-						}
+		Set<String> targets = mythian.getCompassTargetNames();
+
+		if (targets != null) {
+			for (String targetName : targets) {
+				if(targetName != null) {
+					if(currentTar.equals(mythian.getCompassTarget(targetName))) {
+						return targetName;
 					}
 				}
 			}
 		}
-		return "Unknown";
+
+		return "Spawn";
+
 	}
+
+	public static Player getTrackingPlayer(Player tracker) {
+		Set<Player> targets = plugin.playerTargets.keySet();
+		for(Player target : targets) {
+			if(plugin.playerTargets.get(target).hasTracker(tracker)) {
+				return target;
+			}
+		}
+		return null;
+	}
+
+
 
 
 	public static void modMessage(Player player) {
 		if(!player.hasPermission("mythica.registered")) return;
-		String yMod = ChatColor.GOLD + "Our staff is " + ChatColor.GREEN + "available" + ChatColor.GOLD + "! Type /helpme if you need us.";
-		String nMod = ChatColor.GOLD + "Our staff is " + ChatColor.RED + "unavailable" + ChatColor.GOLD + ". If you need help, make an Issue on the website for staff to review as soon as they get on.";
+		String yMod = ChatColor.GREEN + "[Mythica] " + ChatColor.YELLOW + "Our staff is " + ChatColor.GREEN + "available" + ChatColor.YELLOW + "! Type /helpme if you need us.";
+		String nMod = ChatColor.GREEN + "[Mythica] " + ChatColor.YELLOW + "Our staff is " + ChatColor.RED + "unavailable" + ChatColor.YELLOW + ". If you need help, make an Issue on the website for staff to review as soon as they get on.";
 		if(modsOnline()) {
 			player.sendMessage(yMod);
 		} else {
@@ -205,26 +271,27 @@ public class Utils {
 		}
 	}
 
-	public static void offlineBalanceChange(Player player) {
+	public static void offlineBalanceChangeCheck(Player player) {
 		if(!player.hasPermission("mythica.registered")) return;
-		ConfigAccessor playerData = new ConfigAccessor("players.yml");
-		String playerName = player.getDisplayName();
+
+		String playerName = player.getName();
 		Double balance = Mythsentials.economy.getBalance(playerName);
 		String message = "";
-		if(!playerData.getConfig().contains(playerName + ".logoffBalance")) {
+
+		Double previousBal = Mythsentials.getMythianManager().getMythian(playerName).getLogoffBalance();
+		if(previousBal == -1) {
 			return;
 		}
-		Double previousBal = playerData.getConfig().getDouble(playerName + ".logoffBalance");
-		if(balance.equals(previousBal)) {
-			message = ChatColor.YELLOW + "Your bank balance did not change since you last logged off.";
+		else if(balance.equals(previousBal)) {
+			message = ChatColor.GREEN + "[Mythica] " + ChatColor.YELLOW + "Your bank balance did not change since you last logged off.";
 		}
-		if(balance < previousBal) {
+		else if(balance < previousBal) {
 			double difference = roundTwoDecimals(previousBal - balance);
-			message = ChatColor.YELLOW + "Your bank balance fell " + ChatColor.RED + "-$" + difference + ChatColor.YELLOW + " since you last logged off.";
+			message = ChatColor.GREEN + "[Mythica] " + ChatColor.YELLOW + "Your bank balance fell " + ChatColor.RED + "-$" + difference + ChatColor.YELLOW + " to " + ChatColor.GOLD + balance + ChatColor.YELLOW + " since you last logged off.";
 		}
-		if(balance > previousBal) {
+		else if(balance > previousBal) {
 			double difference = roundTwoDecimals(balance - previousBal);
-			message = ChatColor.YELLOW + "Your bank balance grew " + ChatColor.GREEN + "$" + difference + ChatColor.YELLOW + " since you last logged off.";
+			message = ChatColor.GREEN + "[Mythica] " + ChatColor.YELLOW + "Your bank balance grew " + ChatColor.GREEN + "$" + difference + ChatColor.YELLOW + " to " + ChatColor.GOLD + balance + ChatColor.YELLOW + " since you last logged off.";
 		}
 		player.sendMessage(message);
 	}
@@ -286,233 +353,233 @@ public class Utils {
 		}
 		return null;
 	}
-	static double roundTwoDecimals(double d) {
+	public static double roundTwoDecimals(double d) {
 		DecimalFormat twoDForm = new DecimalFormat("#.##");
 		return Double.valueOf(twoDForm.format(d));
 	}
 	public static int getEnchantXpWorth(Enchantment enchant, int level) {
 		if(enchant == Enchantment.LOOT_BONUS_MOBS) {
 			if(level == 1) {
-				return 7/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 2;
 			}
 		}
 		else if(enchant == Enchantment.SILK_TOUCH) {
-			return 30/2;
+			return 2;
 		}
 		else if(enchant == Enchantment.DAMAGE_ALL) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.DAMAGE_ARTHROPODS) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.DAMAGE_UNDEAD) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.KNOCKBACK) {
 			if(level == 1) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 30/2;
+				return 1;
 			}
 		}
 		else if(enchant == Enchantment.PROTECTION_ENVIRONMENTAL) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.PROTECTION_EXPLOSIONS) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.PROTECTION_FALL) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 20/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 30/2;
+				return 2;
 			}
 		}
 		else if(enchant == Enchantment.PROTECTION_FIRE) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.PROTECTION_PROJECTILE) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 2;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 3;
 			}
 		}
 		else if(enchant == Enchantment.OXYGEN) {
 			if(level == 1) {
-				return 7/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 2;
 			}
 		}
 		else if(enchant == Enchantment.WATER_WORKER) {
 			if(level == 1) {
-				return 7/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 2;
 			}
 		}
 		else if(enchant == Enchantment.THORNS) {
 			if(level == 1) {
-				return 7/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 1;
 			}
 		}
 		else if(enchant == Enchantment.FIRE_ASPECT) {
 			if(level == 1) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 30/2;
+				return 1;
 			}
 		}
 		else if(enchant == Enchantment.DIG_SPEED) {
 			if(level == 1) {
-				return 5/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 10/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 4) {
-				return 20/2;
+				return 1;
 			}
 			if(level == 5) {
-				return 30/2;
+				return 1;
 			}
 		}
 		else if(enchant == Enchantment.DURABILITY) {
 			if(level == 1) {
-				return 7/2;
+				return 1;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 1;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 1;
 			}
 		}
 		else if(enchant == Enchantment.LOOT_BONUS_BLOCKS) {
@@ -562,10 +629,10 @@ public class Utils {
 				return 7/2;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 10/2;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 25/2;
 			}
 		}
 		else if(enchant == Enchantment.LURE) {
@@ -573,10 +640,10 @@ public class Utils {
 				return 7/2;
 			}
 			if(level == 2) {
-				return 15/2;
+				return 10/2;
 			}
 			if(level == 3) {
-				return 30/2;
+				return 25/2;
 			}
 		}
 		return 0;
@@ -584,27 +651,27 @@ public class Utils {
 	public static int getEnchantXpWorthSurvival(Enchantment enchant, int level) {
 		if(enchant == Enchantment.PROTECTION_FALL) {
 			if(level == 1) {
-				return 3;
+				return 1;
 			}
 			if(level == 2) {
-				return 10;
+				return 1;
 			}
 			if(level == 3) {
-				return 20;
+				return 1;
 			}
 			if(level == 4) {
-				return 30;
+				return 2;
 			}
 		}
 		else if(enchant == Enchantment.DURABILITY) {
 			if(level == 1) {
-				return 3;
+				return 1;
 			}
 			if(level == 2) {
-				return 15;
+				return 2;
 			}
 			if(level == 3) {
-				return 30;
+				return 3;
 			}
 		}
 		return 0;
@@ -764,5 +831,23 @@ public class Utils {
 			name = "Lure";
 		}
 		return name;
+	}
+
+	public static String censorString(String input) {
+		for(CensoredWord badWord : Mythsentials.censoredWords) {
+			Pattern p = Pattern.compile(badWord.getRegexPattern());
+			Matcher m = p.matcher(input);
+			input = m.replaceAll(badWord.getReplacement());
+		}
+		return input;
+	}
+
+	public static String censorStringFunny(String input) {
+		for(CensoredWord badWord : Mythsentials.censoredWordsFunny) {
+			Pattern p = Pattern.compile(badWord.getRegexPattern());
+			Matcher m = p.matcher(input);
+			input = m.replaceAll(badWord.getReplacement());
+		}
+		return input;
 	}
 }

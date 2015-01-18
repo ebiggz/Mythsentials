@@ -19,11 +19,14 @@ import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.events.PermissionEntityEvent;
 import ru.tehkode.permissions.events.PermissionEntityEvent.Action;
 
+import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCBot;
+import com.mythicacraft.plugins.mythsentials.SpirebotIRC.IRCUtils;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 
 
 public class GroupChange implements Listener {
 
+	@SuppressWarnings("deprecation")
 	@EventHandler(priority= EventPriority.MONITOR)
 	public void onGroupChange(PermissionEntityEvent event) {
 		if(event.getAction() == Action.INHERITANCE_CHANGED) {
@@ -31,10 +34,10 @@ public class GroupChange implements Listener {
 			String[] groups = user.getGroupsNames();
 			for(int i = 0; i < groups.length; i++) {
 				if(groups[i].equalsIgnoreCase("Member")) {
-					Utils.playerNotify("mythica.helpreceive", ChatColor.RED + "[ModMessage] " + ChatColor.GOLD + user.getName() + ChatColor.YELLOW + " has just successfully registered!");
-					Player p = Bukkit.getPlayerExact(user.getName());
+					Player p = user.getPlayer();
 					if(p == null) return;
 					if(p.isOnline()) {
+						Utils.playerNotify("mythica.helpreceive", ChatColor.RED + "[ModMessage] " + ChatColor.GOLD + p.getDisplayName() + ChatColor.YELLOW + " has just successfully registered!");
 						p.sendMessage(ChatColor.AQUA + "Congrats " + p.getDisplayName() + ", you are now a member of " + ChatColor.YELLOW + "Mythica" + ChatColor.GREEN + "!\n" + ChatColor.DARK_AQUA + "Consult the guide books for help getting started. Also have a look at our online map to find a place to start your new adventure. Lastly, don't forget to check out our wiki and tutorials! Have fun!");
 						p.performCommand("ch g");
 						Location fireworkLoc = p.getLocation();
@@ -45,6 +48,26 @@ public class GroupChange implements Listener {
 							if(onlinePs[x] == p) continue;
 							onlinePs[x].sendMessage(ChatColor.YELLOW + p.getDisplayName() +" is now a member of Mythica. Welcome!");
 						}
+
+						IRCBot bot = IRCBot.getBot();
+						String[] mods = IRCUtils.getMods();
+						for(String mod : mods) {
+							bot.sendMessage(mod, "[ModMessage] " + p.getDisplayName() +" is now a member of Mythica");
+						}
+					}
+				}
+				if(groups[i].equalsIgnoreCase("Donator")) {
+					Player p = user.getPlayer();
+					if(p == null) return;
+					if(p.isOnline()) {
+						p.sendMessage(ChatColor.AQUA + "You are now a donator! Thank you so much for your support!");
+					}
+				}
+				if(groups[i].equalsIgnoreCase("Subscriber")) {
+					Player p = user.getPlayer();
+					if(p == null) return;
+					if(p.isOnline()) {
+						p.sendMessage(ChatColor.AQUA + "You are now a subscriber! Thank you so much for your support!");
 					}
 				}
 			}

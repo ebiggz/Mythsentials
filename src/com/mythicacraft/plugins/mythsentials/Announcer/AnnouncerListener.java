@@ -22,17 +22,23 @@ public class AnnouncerListener implements Listener {
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onJoin(final PlayerJoinEvent event) {
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(Mythsentials.getPlugin(), new Runnable() {
+		scheduler.runTaskLaterAsynchronously(Mythsentials.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
 				if(event.getPlayer().getName().equals("scribbles08")) {
 					event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Welcome back, Princess <3");
 				}
-				event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', everyoneAnnouncement()));
+				String everyoneAnnouncement = everyoneAnnouncement().trim();
+				if(!everyoneAnnouncement.isEmpty()) {
+					event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', everyoneAnnouncement()));
+				}
 				if(Mythsentials.usePermGroupLoginAnnouncements && Mythsentials.hasPermPlugin) {
 					String[] playerGroups = Mythsentials.permission.getPlayerGroups(event.getPlayer());
 					for(String group: playerGroups) {
-						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', permGroupAnnouncement(group)));
+						String groupAnnouncement = permGroupAnnouncement(group).trim();
+						if(!groupAnnouncement.isEmpty()) {
+							event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', permGroupAnnouncement(group)));
+						}
 					}
 				}
 			}
@@ -50,7 +56,7 @@ public class AnnouncerListener implements Listener {
 					new FileReader(everyoneFile));
 
 			String line = reader.readLine();
-			while(line != null) {
+			while(line != null && !line.isEmpty()) {
 				message += line;
 				line = reader.readLine();
 			}

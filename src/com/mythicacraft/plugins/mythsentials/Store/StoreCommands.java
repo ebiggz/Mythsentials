@@ -62,7 +62,7 @@ public class StoreCommands implements CommandExecutor {
 						if(args[1].equalsIgnoreCase("items")) {
 
 							if(unclaimedItemsCount == 0) {
-								sender.sendMessage(ChatColor.RED + "[MythicaStore] You do not have unclaimed rewards!");
+								sender.sendMessage(ChatColor.RED + "[MythicaStore] You do not have unclaimed purchases!");
 								return true;
 							}
 							List<StoreItem> unclaimedItems = mythian.getUnclaimedItems(playername);

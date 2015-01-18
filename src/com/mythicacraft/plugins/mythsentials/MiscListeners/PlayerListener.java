@@ -1,6 +1,5 @@
 package com.mythicacraft.plugins.mythsentials.MiscListeners;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,27 +7,29 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
+import org.kitteh.vanish.event.VanishStatusChangeEvent;
 
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.NotificationStreamMessage;
-import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.Time;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 
@@ -41,31 +42,111 @@ public class PlayerListener implements Listener {
 	}
 
 	@EventHandler (priority = EventPriority.MONITOR)
+	public void onPlayerInteract(final PlayerInteractEvent event) {
+		if(!event.hasBlock()) return;
+		//Check if player has right clicked a door
+		if (event.getAction() == Action.LEFT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.WOODEN_DOOR) {
+			event.getClickedBlock().getWorld().playSound(event.getClickedBlock().getLocation(), Sound.WOOD_CLICK, 4, -1);
+			event.getClickedBlock().getWorld().playSound(event.getClickedBlock().getLocation(), Sound.ZOMBIE_WOOD, 1, -1);
+			event.getClickedBlock().getWorld().playSound(event.getClickedBlock().getLocation(), Sound.NOTE_BASS_DRUM, 1, 0);
+		}
+	}
+
+	@EventHandler (priority = EventPriority.MONITOR)
 	public void onGoingToPvP(PlayerChangedWorldEvent event) {
-		String worldType = MythicaSpawn.getSpawnManager().getWorldType(event.getPlayer().getWorld());
-		if(worldType.equalsIgnoreCase("pvp")) {
-			Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex reload");
+		Player player = event.getPlayer();
+		String worldType = MythicaSpawn.getSpawnManager().getWorldType(player.getWorld());
+		if(worldType.equalsIgnoreCase("pvp") || worldType.equalsIgnoreCase("minigames")) {
+			Utils.reloadPexSmartly(player);
+		}
+
+		if(plugin.playerTargets.containsKey(player)) {
+			List<Player> trackers = plugin.playerTargets.get(player).getTrackers();
+			for(Player tracker: trackers) {
+				if(tracker.getWorld() != player.getWorld()) {
+					tracker.sendMessage(ChatColor.RED + "Player changed worlds! Resetting compass...");
+					tracker.setCompassTarget(tracker.getWorld().getSpawnLocation());
+					if(plugin.compassInfoPanels.containsKey(tracker)) {
+						plugin.compassInfoPanels.get(tracker).setTargetName("Spawn");
+						plugin.compassInfoPanels.get(tracker).run();
+					}
+					plugin.playerTargets.get(player).removeTracker(tracker);
+				}
+			}
+		}
+
+		Player trackingPlayer = Utils.getTrackingPlayer(player);
+		if(trackingPlayer != null) {
+			if(trackingPlayer.getWorld() != player.getWorld()) {
+				plugin.playerTargets.get(trackingPlayer).removeTracker(player);
+				player.setCompassTarget(player.getWorld().getSpawnLocation());
+				if(plugin.compassInfoPanels.containsKey(player)) {
+					plugin.compassInfoPanels.get(player).setTargetName("Spawn");
+					plugin.compassInfoPanels.get(player).run();
+				}
+			}
+		}
+	}
+
+	@EventHandler (priority = EventPriority.MONITOR)
+	public void onVanish(VanishStatusChangeEvent event) {
+
+		if(event.isVanishing()) {
+			Player player = event.getPlayer();
+			if(plugin.playerTargets.containsKey(player)) {
+				List<Player> trackers = plugin.playerTargets.get(player).getTrackers();
+				for(Player tracker: trackers) {
+					if(!tracker.hasPermission("mythica.mod")) {
+						tracker.sendMessage(ChatColor.RED + "Player is no longer available! Resetting compass...");
+						tracker.setCompassTarget(tracker.getWorld().getSpawnLocation());
+						if(plugin.compassInfoPanels.containsKey(tracker)) {
+							plugin.compassInfoPanels.get(tracker).setTargetName("Spawn");
+							plugin.compassInfoPanels.get(tracker).run();
+						}
+						plugin.playerTargets.get(player).removeTracker(tracker);
+					}
+				}
+			}
 		}
 	}
 
 
+
+
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onJoin(PlayerJoinEvent event) {
-		ConfigAccessor playerData = new ConfigAccessor("players.yml");
-		Player p = event.getPlayer();
+
+		final Player p = event.getPlayer();
+
 		if(!p.hasPlayedBefore()) {
 			Mythsentials.notificationStream.addMessage(new NotificationStreamMessage("newplayer", p.getName(), null));
 			Utils.playerNotify("mythica.helpreceive", ChatColor.RED + "[ModMessage] " + ChatColor.GOLD + p.getDisplayName() + ChatColor.YELLOW + " is new!");
 		}
-		checkForNewLoc(p);
-		String playerName = p.getDisplayName();
-		Utils.offlineBalanceChange(p);
-		Utils.modMessage(p);
-		String time = Time.getTime();
-		playerData.getConfig().set(playerName + ".joinTime", time);
-		playerData.saveConfig();
-		if(MythicaSpawn.getSpawnManager().getWorldType(p.getWorld()).equalsIgnoreCase("pvp")) {
-			Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex reload");
+
+		String playerName = p.getName();
+		Mythian mythian = Mythsentials.getMythianManager().getMythian(playerName);
+
+		mythian.setJoinTime(Time.getTime());
+
+		Location newLoc = mythian.getNewLoginLoc();
+		if(newLoc != null) {
+			p.teleport(newLoc);
+			mythian.setNewLoginLoc(null);
+		}
+
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.runTaskLaterAsynchronously(Mythsentials.getPlugin(), new Runnable() {
+			@Override
+			public void run() {
+				p.sendMessage(ChatColor.YELLOW + "[Mythica] "+ ChatColor.GREEN + "Last tweet from @MythicaCraft: " + ChatColor.WHITE + Utils.getLastTweet() + "\n" + ChatColor.GRAY + " Type /twitter to see more tweets.");
+				/*Utils.offlineBalanceChangeCheck(p);
+				Utils.modMessage(p);*/
+			}
+		}, 15L);
+
+		String worldType = MythicaSpawn.getSpawnManager().getWorldType(p.getWorld());
+		if(worldType.equalsIgnoreCase("pvp") || worldType.equalsIgnoreCase("minigames")) {
+			Utils.reloadPexSmartly(p);
 		}
 	}
 
@@ -78,8 +159,11 @@ public class PlayerListener implements Listener {
 		Double balance = Mythsentials.economy.getBalance(playerName);
 		Mythsentials.getMythianManager().getMythian(playerName).setLogoffBalance(balance);
 
+		if(Mythsentials.permissionsReloaded.contains(p)) {
+			Mythsentials.permissionsReloaded.remove(p);
+		}
+
 		if(plugin.compassInfoPanels.containsKey(p)) {
-			plugin.compassInfoPanels.get(p).cancel();
 			plugin.compassInfoPanels.remove(p);
 			p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 		}
@@ -88,6 +172,24 @@ public class PlayerListener implements Listener {
 			plugin.playerTrackers.get(p).cancel();
 			plugin.playerTrackers.remove(p);
 			p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		}
+
+		if(plugin.playerTargets.containsKey(event.getPlayer())) {
+			List<Player> trackers = plugin.playerTargets.get(event.getPlayer()).getTrackers();
+			for(Player tracker : trackers) {
+				tracker.setCompassTarget(tracker.getWorld().getSpawnLocation());
+				tracker.sendMessage(ChatColor.RED + event.getPlayer().getName() + " has gone offline and is no longer available to track! Resetting compass...");
+				if(plugin.compassInfoPanels.containsKey(tracker)) {
+					plugin.compassInfoPanels.get(tracker).setTargetName("Spawn");
+					plugin.compassInfoPanels.get(tracker).run();
+				}
+			}
+			plugin.playerTargets.remove(event.getPlayer());
+		}
+
+		Player trackingPlayer = Utils.getTrackingPlayer(p);
+		if(trackingPlayer != null) {
+			plugin.playerTargets.get(trackingPlayer).removeTracker(p);
 		}
 	}
 
@@ -108,7 +210,10 @@ public class PlayerListener implements Listener {
 			String deathLoc = Integer.toString((int) death.getX()) + "," + Integer.toString((int) death.getY()) + "," + Integer.toString((int) death.getZ()) + "," + death.getWorld().getName();
 			List<ItemStack> armor = Arrays.asList(event.getEntity().getInventory().getArmorContents());
 
-			PlayerDeathDrop thisDeath = new PlayerDeathDrop(playerName, drops, armor, deathLoc, deathWorld, event.getDeathMessage().replace(playerName, "").trim());
+			String reason = event.getDeathMessage().replace(playerName, "Player").trim();
+			String time = Time.dateAndTimeFromMills(Time.timeInMillis());
+
+			PlayerDeathDrop thisDeath = new PlayerDeathDrop(playerName, drops, armor, deathLoc, deathWorld, reason, time);
 			mythian.addNewDeathDrop(thisDeath);
 		}
 	}
@@ -118,8 +223,43 @@ public class PlayerListener implements Listener {
 		event.getRecipients().clear();
 	}
 
+	@EventHandler (priority = EventPriority.HIGHEST)
+	public void onPlayerMove(PlayerMoveEvent event) {
+		Location to = event.getTo();
+		Location from = event.getFrom();
+		if(((to.getBlockX() == from.getBlockX()) && (to.getBlockY() == to.getBlockY()) && (to.getBlockZ() == to.getBlockZ())) && ((to.getYaw() != from.getYaw()) || (to.getPitch() != from.getPitch()))) return;
+		if(plugin.compassInfoPanels.containsKey(event.getPlayer())) {
+			if(!event.getPlayer().getInventory().contains(Material.COMPASS)) {
+				event.getPlayer().sendMessage(ChatColor.RED + "A compass is required to be in your inventory to use the info panel.");
+				plugin.compassInfoPanels.remove(event.getPlayer());
+				event.getPlayer().getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+			} else {
+				plugin.compassInfoPanels.get(event.getPlayer()).run();
+			}
+		}
+		if(plugin.playerTargets.containsKey(event.getPlayer())) {
+			List<Player> trackers = plugin.playerTargets.get(event.getPlayer()).getTrackers();
+			for(Player tracker : trackers) {
+				tracker.setCompassTarget(event.getPlayer().getLocation());
+				if(plugin.compassInfoPanels.containsKey(tracker)) {
+					if(!tracker.getInventory().contains(Material.COMPASS)) {
+						tracker.sendMessage(ChatColor.RED + "A compass is required to be in your inventory to use the info panel.");
+						plugin.compassInfoPanels.remove(tracker);
+						tracker.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+					} else {
+						plugin.compassInfoPanels.get(tracker).run();
+					}
+				}
+			}
+		}
+	}
 
-	public static void giveStarterKit(Player p) {
+
+
+
+
+
+	/*public static void giveStarterKit(Player p) {
 		PlayerInventory inv = p.getInventory();
 		inv.setHelmet(new ItemStack(Material.LEATHER_HELMET, 1));
 		inv.setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE, 1));
@@ -172,16 +312,5 @@ public class PlayerListener implements Listener {
 		guide.setItemMeta(guideMeta);
 		return guide;
 	}
-
-	void checkForNewLoc(Player player) {
-		ConfigAccessor playerData = new ConfigAccessor("players.yml");
-		if(playerData.getConfig().contains(player.getName() + ".newLoginLoc")) {
-			String[] points = playerData.getConfig().getString(player.getName() + ".newLoginLoc").split(",");
-			World world = Bukkit.getWorld(points[3]);
-			Location newLoc = new Location(world, Double.parseDouble(points[0]), Double.parseDouble(points[1]), Double.parseDouble(points[2]));
-			player.teleport(newLoc);
-			playerData.getConfig().set(player.getName() + ".newLoginLoc", null);
-			playerData.saveConfig();
-		}
-	}
+	 */
 }

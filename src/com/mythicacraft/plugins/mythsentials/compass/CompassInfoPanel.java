@@ -43,25 +43,23 @@ public class CompassInfoPanel extends BukkitRunnable {
 	}
 
 	private void updateBoard() {
-		objective.setDisplayName(ChatColor.GOLD + Utils.getTargetName(user));
 		distance.setScore(getDistance());
 		height.setScore(getHeight());
+	}
 
+	public void setTargetName(String name) {
+		objective.setDisplayName(ChatColor.GOLD + name);
 	}
 
 	private int getDistance() {
-		double distance = user.getLocation().toVector().distance(user.getCompassTarget().toVector());
-		return (int) Math.round(distance);
+		double distance = user.getLocation().distance(user.getCompassTarget());
+		return (int) Math.floor(distance);
 	}
 
 	private int getHeight() {
 		int playerY = user.getLocation().getBlockY();
 		int targetY = user.getCompassTarget().getBlockY();
-		if(playerY > targetY) {
-			return targetY - playerY;
-		} else {
-			return playerY - targetY;
-		}
+		return targetY - playerY;
 	}
 	public void clearBoard() {
 		board.clearSlot(DisplaySlot.SIDEBAR);

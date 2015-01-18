@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
+import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 
 public class CommandAliases implements Listener {
@@ -53,6 +54,7 @@ public class CommandAliases implements Listener {
 			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					PermissionUser user = PermissionsEx.getUser(p);
+					@SuppressWarnings("deprecation")
 					String[] groups = user.getGroupsNames();
 					for(int i = 0; i < groups.length; i++) {
 						if(groups[i].equalsIgnoreCase("Unregistered")) {
@@ -61,7 +63,20 @@ public class CommandAliases implements Listener {
 					}
 				}
 			}
-			, 10L);
+			, 20L);
 		}
+
+		else if(command.contains("/mute")) {
+			String newCommand = command.replace("/mute", "/ch mute");
+			event.setMessage(newCommand);
+		}
+
+		if(command.contains("/tell")) return;
+		if(command.contains("/msg")) return;
+		if(command.contains("/r")) return;
+
+		Mythian mythian = Mythsentials.getMythianManager().getMythian(p.getName());
+		mythian.addRecentCommand(command);
+
 	}
 }

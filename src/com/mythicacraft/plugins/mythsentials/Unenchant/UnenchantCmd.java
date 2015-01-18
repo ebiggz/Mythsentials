@@ -45,10 +45,11 @@ public class UnenchantCmd implements CommandExecutor {
 					sender.sendMessage(ChatColor.GOLD + "\"/runes buy [amount]\" allows you to buy Runes.");
 					sender.sendMessage(ChatColor.GOLD + "\"/runes give [player] [amount]\" allows you to give Runes to others.");
 					if(sender.hasPermission("mythica.mod")) {
-						sender.sendMessage(ChatColor.GOLD + "\"/runes set [player] +/-[amount]\" allows you to set others Runes.");
+						sender.sendMessage(ChatColor.GOLD + "\"/runes [player]\" allows you to see a players total Runes.");
+						sender.sendMessage(ChatColor.GOLD + "\"/runes set [player] +/-[amount]\" allows you to set others Rune count.");
 					}
 				}
-				if(args[0].equalsIgnoreCase("buy")) {
+				else if(args[0].equalsIgnoreCase("buy")) {
 					if(args.length == 1) {
 						sender.sendMessage(ChatColor.GOLD + "Runes cost $50 each. Type \"/runes buy [amount]\" to purchase some.");
 					}
@@ -82,7 +83,7 @@ public class UnenchantCmd implements CommandExecutor {
 						}
 					}
 				} //end of buy command
-				if(args[0].equalsIgnoreCase("give")) {
+				else if(args[0].equalsIgnoreCase("give")) {
 					if(args.length != 3) {
 						sender.sendMessage(ChatColor.RED + "Invaild give command. \"/runes give [player] [amount]\"");
 					} else {
@@ -117,7 +118,7 @@ public class UnenchantCmd implements CommandExecutor {
 						}
 					}
 				} //end of give command
-				if(args[0].equalsIgnoreCase("set")) {
+				else if(args[0].equalsIgnoreCase("set")) {
 					if(!sender.hasPermission("mythica.mod")) {
 						sender.sendMessage(ChatColor.RED + "You don't have permission for this!");
 						return true;
@@ -151,6 +152,19 @@ public class UnenchantCmd implements CommandExecutor {
 						}
 					}
 				}
+				else {
+					if(!sender.hasPermission("mythica.mod")) {
+						sender.sendMessage(ChatColor.RED + "Type /runes ?");
+						return true;
+					}
+					String otherPlayer = Utils.completeName(args[0]);
+					if(otherPlayer == null) {
+						sender.sendMessage(ChatColor.RED + "Couldn't find a player by the name: " + args[0]);
+						return true;
+					}
+					Mythian otherMythian = mm.getMythian(otherPlayer);
+					sender.sendMessage(ChatColor.YELLOW + otherPlayer + ChatColor.GOLD + "'s Rune count is " + ChatColor.YELLOW + otherMythian.getRunes() + ChatColor.GOLD + ".");
+				}
 			}
 		}//end of Rune commands
 		if(commandLabel.equalsIgnoreCase("unenchant")) {
@@ -168,7 +182,7 @@ public class UnenchantCmd implements CommandExecutor {
 				if(inHand.containsEnchantment(enchant)) {
 					if(mythian.getCurrentUniverse() == Universe.SURVIVAL) {
 						if(enchant == Enchantment.PROTECTION_FALL || enchant == Enchantment.DURABILITY) {
-							player.giveExpLevels(Utils.getEnchantXpWorthSurvival(enchant, inHand.getEnchantmentLevel(enchant)));
+							player.giveExpLevels(1);
 							inHand.removeEnchantment(enchant);
 							if(sender.getName().equals("scribbles08")) {
 								sender.sendMessage(ChatColor.LIGHT_PURPLE + "Congrats princess, you've unenchanted " + ChatColor.YELLOW + Utils.getNameFromEnchant(enchant) + ChatColor.LIGHT_PURPLE + ", and I didn't even charge you for it <3");
@@ -182,7 +196,7 @@ public class UnenchantCmd implements CommandExecutor {
 						sender.sendMessage(ChatColor.RED + "You don't have a Rune to use for an unenchantment! Type \"/runes ?\" for more info.");
 						return true;
 					}
-					player.giveExpLevels(Utils.getEnchantXpWorth(enchant, inHand.getEnchantmentLevel(enchant)));
+					player.giveExpLevels(1);
 					inHand.removeEnchantment(enchant);
 					mythian.setRunes(mythian.getRunes() - 1);
 					if(sender.getName().equals("scribbles08")) {

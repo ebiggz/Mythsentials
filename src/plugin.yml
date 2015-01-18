@@ -42,6 +42,9 @@ commands:
     playerinfo:
         description: Mod command for viewing player info.
         useage: /<command> [playername]
+    pi:
+        description: Mod command for viewing player info.
+        useage: /<command> [playername]
     deathdrops:
         description: Mod command for viewing player death drops.
         useage: /<command> [playername]
@@ -125,7 +128,39 @@ commands:
     mw:
         description: Access to Mythica Weather commands.
         usage: /<command> help
+    sure:
+        description: tps selected mob.
+        usage: /<command>
+    nah:
+        description: tps selected mob.
+        usage: /<command>
+    creep:
+        description: tps selected mob.
+        usage: /<command>
+    stoptrack:
+        description: tps selected mob.
+        usage: /<command>
+    trackers:
+        description: tps selected mob.
+        usage: /<command>
+    censorchat:
+        description: censor chat commands.
+        usage: /<command>
+    chunkcheck:
+        description: chunk indexer.
+        usage: /<command>
+    twitter:
+        description: chunk indexer.
+        usage: /<command>
+    store:
+        description: chunk indexer.
+        usage: /<command>
+    friends:
+        description: chunk indexer.
+        usage: /<command>
 permissions:
+    mythica.censorchat.self:
+        default: true
     mythica.helpsend:
         default: false
     mythica.helpreceive:
