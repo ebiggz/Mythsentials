@@ -45,8 +45,8 @@ commands:
     pi:
         description: Mod command for viewing player info.
         useage: /<command> [playername]
-    deathdrops:
-        description: Mod command for viewing player death drops.
+    deathlogs:
+        description: Mod command for viewing player death logs.
         useage: /<command> [playername]
     loginlocation:
         description: Mod command for setting player login location.
@@ -156,6 +156,9 @@ commands:
         description: chunk indexer.
         usage: /<command>
     friends:
+        description: chunk indexer.
+        usage: /<command>
+    mail:
         description: chunk indexer.
         usage: /<command>
 permissions:

@@ -37,21 +37,21 @@ public class MythiboardManager {
 		board.registerNewObjective("InfoPanel", "dummy");
 		Objective objective = board.getObjective("InfoPanel");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		objective.setDisplayName(ChatColor.GOLD + "Welcome back!");
+		objective.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "MythicaCraft");
 
-		int commandCount = 0;
+		/*int commandCount = 0;
 		for(ScoreboardEntry entry : entries) {
 			String command = entry.getCommand();
 			if(command != null && !command.isEmpty()) commandCount++;
-		}
+		}*/
 
-		int count = (entries.size()*3) - 1 + commandCount;
+		int count = (entries.size()*3) - 1 /*+ commandCount*/;
 		int blankCount = 1;
 
 		for(ScoreboardEntry entry : entries) {
 
-			String key = ChatColor.YELLOW + "" + ChatColor.BOLD + ChatColor.stripColor(entry.getKey());
-			String value = entry.getValue(player);
+			String key = ChatColor.AQUA + "" + ChatColor.BOLD + ChatColor.stripColor(entry.getKey());
+			String value = ChatColor.stripColor(entry.getValue(player));
 
 			if(key == null || key.isEmpty() || value == null || value.isEmpty()) {count -= 2; continue;}
 
@@ -68,11 +68,12 @@ public class MythiboardManager {
 			objective.getScore(Bukkit.getOfflinePlayer(value)).setScore(count);
 			count--;
 
-			String command = entry.getCommand();
+			/*String command = entry.getCommand();
 			if(command != null && !command.isEmpty()) {
 				objective.getScore(Bukkit.getOfflinePlayer(ChatColor.GRAY + command)).setScore(count);
 				count--;
-			}
+			}*/
+
 			if(count > 1) {
 				objective.getScore(Bukkit.getOfflinePlayer(emptyScore(blankCount))).setScore(count);
 				blankCount++;

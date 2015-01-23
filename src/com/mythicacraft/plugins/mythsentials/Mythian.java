@@ -14,11 +14,19 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.gmail.mythicacraft.mythicaspawn.SpawnManager.Universe;
-import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
+import com.mythicacraft.plugins.mythsentials.DeathLedger.DeathLog;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.MailboxManager.MailboxType;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.mailtypes.Experience;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.mailtypes.Mail;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.mailtypes.Mail.MailStatus;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.mailtypes.Mail.MailType;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.mailtypes.PackageObj;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.mailtypes.Payment;
 import com.mythicacraft.plugins.mythsentials.Store.StoreItem;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.Time;
@@ -66,6 +74,113 @@ public class Mythian {
 	public void setLogoffXP(int amount) {
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		playerData.getConfig().set("logoffXP", amount);
+		playerData.saveConfig();
+	}
+
+	public ConfigurationSection getInboxConfigSection() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().getConfigurationSection("mailbox.inbox");
+	}
+
+	public ConfigurationSection getSentConfigSection() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().getConfigurationSection("mailbox.sent");
+	}
+
+	public void savePlayerMailboxType(List<Mail> box, MailboxType mbType) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		String boxType;
+		if(mbType == MailboxType.INBOX) {
+			boxType = "inbox";
+		} else {
+			boxType = "sent";
+		}
+		Collections.sort(box);
+		int count = 1;
+		mailLoop: for(Mail mail : box) {
+			if(count <= 50) {
+				playerData.getConfig().set("mailbox." + boxType + "." + count + ".from", mail.getFrom());
+				playerData.getConfig().set("mailbox." + boxType + "." + count + ".to", mail.getTo());
+				playerData.getConfig().set("mailbox." + boxType + "." + count + ".type", mail.getType().toString());
+				playerData.getConfig().set("mailbox." + boxType + "." + count + ".message", mail.getMessage());
+				playerData.getConfig().set("mailbox." + boxType + "." + count + ".timeStamp", mail.getTimeStamp());
+				playerData.getConfig().set("mailbox." + boxType + "." + count + ".status", mail.getStatus().toString());
+				if(mail.getType() == MailType.PACKAGE) {
+					playerData.getConfig().set("mailbox." + boxType + "." + count + ".items", ((PackageObj) mail).getItems());
+				}
+				else if(mail.getType() == MailType.PAYMENT) {
+					playerData.getConfig().set("mailbox." + boxType + "." + count + ".money", ((Payment) mail).getPayment());
+				}
+				else if(mail.getType() == MailType.EXPERIENCE) {
+					playerData.getConfig().set("mailbox." + boxType + "." + count + ".xp", ((Experience) mail).getExperience());
+				}
+			} else { break mailLoop; }
+			playerData.saveConfig();
+			count++;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Mail> loadPlayerMailboxType(MailboxType mbType) {
+
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		String boxType;
+		if(mbType == MailboxType.INBOX) {
+			boxType = "inbox";
+		} else {
+			boxType = "sent";
+		}
+
+		ConfigurationSection boxSection = playerData.getConfig().getConfigurationSection(boxType);
+		List<Mail> box = new ArrayList<Mail>();
+		if(boxSection != null) {
+			for(String mailNumber: boxSection.getKeys(false)) {
+				ConfigurationSection mailData = playerData.getConfig().getConfigurationSection(boxType + "." + mailNumber);
+				if(mailData != null) {
+
+					String to = mailData.getString("to");
+					String from = mailData.getString("from");
+					MailType type = MailType.valueOf(mailData.getString("type"));
+					String message = mailData.getString("message");
+					String timeStamp = mailData.getString("timeStamp");
+					MailStatus status = MailStatus.valueOf(mailData.getString("status"));
+
+					switch(type) {
+						case PACKAGE:
+							box.add(new PackageObj(to, from, message, timeStamp, status, (List<ItemStack>) mailData.getList("items")));
+							break;
+						case PAYMENT:
+							box.add(new Payment(to, from, message, timeStamp, status, mailData.getDouble("money")));
+							break;
+						case EXPERIENCE:
+							box.add(new Experience(to, from, message, timeStamp, status, mailData.getInt("xp")));
+							break;
+						default:
+							box.add(new Mail(to, from, message, timeStamp, type, status));
+					}
+				}
+			}
+			Collections.sort(box);
+		}
+		return box;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ItemStack> getMailDropbox() {
+		List<ItemStack> dropbox = new ArrayList<ItemStack>();
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		if(playerData.getConfig().contains("mailbox.dropbox")) {
+			List<ItemStack> dropboxData = (List<ItemStack>) playerData.getConfig().getList("mailbox.dropbox");
+			if(dropboxData != null && !dropboxData.isEmpty()) {
+				dropbox = dropboxData;
+			}
+		}
+		return dropbox;
+	}
+
+	public void saveMailDropbox(List<ItemStack> items) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("mailbox.dropbox", items);
 		playerData.saveConfig();
 	}
 
@@ -190,15 +305,15 @@ public class Mythian {
 		return itemsList.size();
 	}
 
-	public List<PlayerDeathDrop> getDeathDrops() {
+	public List<DeathLog> getDeathLogs() {
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		ConfigurationSection cs = playerData.getConfig().getConfigurationSection("lastDeathDrops");
-		List<PlayerDeathDrop> dropsList = new ArrayList<PlayerDeathDrop>();
+		List<DeathLog> dropsList = new ArrayList<DeathLog>();
 		if(cs != null) {
 			for(String deathDrop: cs.getKeys(false)) {
 				ConfigurationSection deathDropData = playerData.getConfig().getConfigurationSection("lastDeathDrops." + deathDrop);
 				if(deathDropData != null) {
-					dropsList.add(new PlayerDeathDrop(playerName, deathDropData));
+					dropsList.add(new DeathLog(playerName, deathDropData));
 				}
 			}
 			while(dropsList.size() >= 10) {
@@ -209,8 +324,8 @@ public class Mythian {
 		return dropsList;
 	}
 
-	public void addNewDeathDrop(PlayerDeathDrop playerDeathDrop) {
-		List<PlayerDeathDrop> allDeathDrops = getDeathDrops();
+	public void addNewDeathLog(DeathLog playerDeathDrop) {
+		List<DeathLog> allDeathDrops = getDeathLogs();
 		allDeathDrops.add(playerDeathDrop);
 		while(allDeathDrops.size() >= 10) {
 			allDeathDrops.remove(allDeathDrops.size()-1);

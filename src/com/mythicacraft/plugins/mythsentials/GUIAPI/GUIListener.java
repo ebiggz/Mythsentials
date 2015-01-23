@@ -18,9 +18,10 @@ public class GUIListener implements Listener {
 		if (!(e.getWhoClicked() instanceof Player)) return;
 		Player p = (Player) e.getWhoClicked();
 		if(gm.playerHasGUIOpen(p)){
-			e.setCancelled(true);
 			GUI gui = gm.getPlayersCurrentGUI(p);
-			gui.onInventoryClick(p, e.getSlot(), e.getInventory().getItem(e.getSlot()));
+			if(e.getRawSlot() > e.getInventory().getSize() && gui.shouldAutoCancel()) return;
+			e.setCancelled(true);
+			gui.onInventoryClick(p, e);
 		}
 	}
 

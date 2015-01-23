@@ -23,17 +23,24 @@ public class BoardListener implements Listener{
 		if(!p.hasPlayedBefore()) return;
 
 		final Scoreboard sb = Mythsentials.getMythiboardManager().getMythiboard(p);
-		p.setScoreboard(sb);
 
 		final BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.runTaskLater(Mythsentials.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
-				sb.clearSlot(DisplaySlot.SIDEBAR);
-				Scoreboard emptyBoard = Bukkit.getScoreboardManager().getNewScoreboard();
-				p.setScoreboard(emptyBoard);
+
+				p.setScoreboard(sb);
+
+				scheduler.runTaskLater(Mythsentials.getPlugin(), new Runnable() {
+					@Override
+					public void run() {
+						sb.clearSlot(DisplaySlot.SIDEBAR);
+						Scoreboard emptyBoard = Bukkit.getScoreboardManager().getNewScoreboard();
+						p.setScoreboard(emptyBoard);
+					}
+				}, 600L);
 			}
-		}, 600L);
+		}, 60L);
 
 	}
 }

@@ -31,7 +31,9 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.dthielke.herochat.Herochat;
 import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
-import com.mythicacraft.plugins.mythsentials.Utilities.Paginate;
+import com.mythicacraft.plugins.mythsentials.DeathLedger.DeathLog;
+import com.mythicacraft.plugins.mythsentials.DeathLedger.LogListGUI;
+import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIManager;
 import com.mythicacraft.plugins.mythsentials.Utilities.Time;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 
@@ -143,9 +145,9 @@ public class AdminTools implements CommandExecutor {
 
 			}
 		}
-		if(commandLabel.equalsIgnoreCase("deathdrops")) {
+		if(commandLabel.equalsIgnoreCase("deathlogs")) {
 
-			Paginate playerDeathDrops = new Paginate();
+			//Paginate playerDeathDrops = new Paginate();
 
 			if(args.length == 0) {
 				sender.sendMessage(ChatColor.RED + "Please type in a players name.");
@@ -158,26 +160,17 @@ public class AdminTools implements CommandExecutor {
 					sender.sendMessage(ChatColor.RED + "Not a known player.");
 					return true;
 				}
-				List<PlayerDeathDrop> dropsList = Mythsentials.getMythianManager().getMythian(args[0]).getDeathDrops();
-				if(dropsList.isEmpty()) {
+				List<DeathLog> logList = Mythsentials.getMythianManager().getMythian(args[0]).getDeathLogs();
+				if(logList.isEmpty()) {
 					sender.sendMessage(ChatColor.RED + "No prior deathdrops saved for " + args[0] + " yet.");
 					return true;
 				}
-				playerDeathDrops.setHeader(args[0] + " Death Drops");
-				playerDeathDrops.setFooter("deathdrops " + args[0] + " next");
-				playerDeathDrops.setPaginateString(getDeathDropsMenu(dropsList));
 				if(args.length == 1) {
-					playerDeathDrops.sendPage(1, sender);
+					LogListGUI listGUI = new LogListGUI(args[0],logList);
+					GUIManager.getInstance().showGUI(listGUI, (Player) sender);
+					return true;
 				}
 				if(args.length > 1) {
-					if(args[1].equalsIgnoreCase("next")) {
-						if(playerDeathDrops.pageTotal() > 1) {
-							playerDeathDrops.sendPage(2, sender);
-						} else {
-							sender.sendMessage(ChatColor.RED + "There's not another page!");
-						}
-						return true;
-					}
 					if(args[1].equalsIgnoreCase("setmyinv")) {
 						if(args.length == 3) {
 							Player player = (Player) sender;
@@ -189,15 +182,20 @@ public class AdminTools implements CommandExecutor {
 								return true;
 							}
 
-							PlayerDeathDrop playerDD = dropsList.get(ddNum);
+							DeathLog playerDD = logList.get(ddNum);
+
+							int openSpots = Utils.getPlayerOpenInvSlots(player);
+							if(playerDD.getDropsSanArmor().size() > openSpots) {
+								player.sendMessage(ChatColor.RED + "There is not enough empty room in your inventory. Please clear it and try again.");
+								return true;
+							}
 
 							if(playerDD.hasArmor()) {
 
-								//get and set inventory
-								List<ItemStack> drops = playerDD.getDropsSanArmor();
-								ItemStack[] dropArray = new ItemStack[drops.size()];
-								drops.toArray(dropArray);
-								player.getInventory().setContents(dropArray);
+								if(Utils.playerHasArmor(player)) {
+									player.sendMessage(ChatColor.RED + "Please clear out your armor slots and try again.");
+									return true;
+								}
 
 								//get armor
 								ItemStack[] armor = new ItemStack[playerDD.getArmor().size()];
@@ -219,14 +217,17 @@ public class AdminTools implements CommandExecutor {
 										player.getInventory().setBoots(armor[i]);
 									}
 								}
+
+								//get and set inventory
+								List<ItemStack> drops = playerDD.getDropsSanArmor();
+								for(ItemStack item : drops) {
+									player.getInventory().addItem(item);
+								}
+
 								sender.sendMessage(ChatColor.AQUA + "You have set your inventory to " + args[0] + "'s death drop number " + args[2]);
 								return true;
 							}
-							List<ItemStack> dd = playerDD.getDrops();
-							ItemStack[] dropArray = new ItemStack[dd.size()];
-							dd.toArray(dropArray);
 							sender.sendMessage(ChatColor.AQUA + "You have set your inventory to " + args[0] + "'s death drop number " + args[2]);
-							player.getInventory().setContents(dropArray);
 							return true;
 						} else {
 							sender.sendMessage(ChatColor.RED + "Please include a deathdrop number from the list of " + args[0] + "'s deathdrops. Type \"/deathdrops " + args[0] + "\" to see that list.");
@@ -244,20 +245,25 @@ public class AdminTools implements CommandExecutor {
 								}
 							}
 							if(!foundPlayer) {
-								sender.sendMessage(ChatColor.RED + "Player is not online! You can set the invetory to yourself and use /inv playername");
+								sender.sendMessage(ChatColor.RED + "Player is not online! You can set the invetory to yourself and use /inv " + args[0]);
 								return true;
 							}
 							Player player = Bukkit.getPlayerExact(args[0]);
 							try {
 								int ddNum = Integer.parseInt(args[2])-1;
-								PlayerDeathDrop playerDD = dropsList.get(ddNum);
+								DeathLog playerDD = logList.get(ddNum);
+								int openSpots = Utils.getPlayerOpenInvSlots(player);
+								if(playerDD.getDropsSanArmor().size() > openSpots) {
+									player.sendMessage(ChatColor.RED + "There is not enough empty room in the players inventory. Please have them clear it and then try again.");
+									return true;
+								}
+
 								if(playerDD.hasArmor()) {
 
-									//get and set inventory
-									List<ItemStack> drops = playerDD.getDropsSanArmor();
-									ItemStack[] dropArray = new ItemStack[drops.size()];
-									drops.toArray(dropArray);
-									player.getInventory().setContents(dropArray);
+									if(Utils.playerHasArmor(player)) {
+										player.sendMessage(ChatColor.RED + "Please have the other player clear out their armor slots and try again.");
+										return true;
+									}
 
 									//get armor
 									ItemStack[] armor = new ItemStack[playerDD.getArmor().size()];
@@ -279,30 +285,31 @@ public class AdminTools implements CommandExecutor {
 											player.getInventory().setBoots(armor[i]);
 										}
 									}
-									sender.sendMessage(ChatColor.AQUA + "You have set " + args[0] + "'s inventoy to death drop number " + args[2]);
-									player.sendMessage(ChatColor.AQUA + "A moderator has reset your inventory to before a previous death.");
-									return true;
 								}
-								List<ItemStack> dd = playerDD.getDrops();
-								ItemStack[] dropArray = new ItemStack[dd.size()];
-								dd.toArray(dropArray);
-								sender.sendMessage(ChatColor.AQUA + "You have set " + args[0] + "'s inventory to death drop number " + args[2]);
-								player.getInventory().setContents(dropArray);
-								player.sendMessage(ChatColor.AQUA + "A moderator has reset your inventory to before a previous death.");
+
+								//get and set inventory
+								List<ItemStack> drops = playerDD.getDropsSanArmor();
+								for(ItemStack item : drops) {
+									player.getInventory().addItem(item);
+								}
+
+								sender.sendMessage(ChatColor.AQUA + "You have restored " + args[0] + "'s inventory from death log number " + args[2]);
+								player.sendMessage(ChatColor.AQUA + "A moderator has restored the inventory from one of your previous deaths.");
 								return true;
+
 							} catch (Exception e) {
 								sender.sendMessage(ChatColor.RED + "Thats not a valid number!");
 							}
 						} else {
-							sender.sendMessage(ChatColor.RED + "Please include a deathdrop number from the list of " + args[0] + "'s deathdrops. Type \"/deathdrops " + args[0] + "\" to see that list.");
+							sender.sendMessage(ChatColor.RED + "Please include a death log number from the list of " + args[0] + "'s death logs. Type \"/deathlogs " + args[0] + "\" to see that list.");
 						}
 						return true;
 					}
 
-					try {
+					/* try {
 						int ddNum = Integer.parseInt(args[1])-1;
-						if(ddNum <= dropsList.size()) {
-							PlayerDeathDrop dd = dropsList.get(ddNum);
+						if(ddNum <= logList.size()) {
+							DeathLog dd = logList.get(ddNum);
 							sender.sendMessage(ChatColor.GREEN + "-----" + ChatColor.YELLOW + args[0] + ChatColor.GREEN + " Death Drop #" + ChatColor.YELLOW + args[1] + ChatColor.GREEN + "-----");
 							sender.sendMessage(ChatColor.GOLD + "Time: " + ChatColor.GRAY + dd.getDeathTime());
 							sender.sendMessage(ChatColor.GOLD + "Location: " + ChatColor.GRAY + dd.getDeathLoc());
@@ -313,7 +320,7 @@ public class AdminTools implements CommandExecutor {
 						}
 					} catch(Exception e) {
 						sender.sendMessage(ChatColor.RED + "Not a valid deathdrop number!");
-					}
+					} */
 
 				}
 			}
@@ -368,11 +375,11 @@ public class AdminTools implements CommandExecutor {
 	}
 
 
-	public String getDeathDropsMenu(List<PlayerDeathDrop> dropsList) {
+	public String getDeathDropsMenu(List<DeathLog> dropsList) {
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < dropsList.size(); i++) {
 			int dropNum = i + 1;
-			PlayerDeathDrop dd = dropsList.get(i);
+			DeathLog dd = dropsList.get(i);
 			sb.append(dropNum + ": " + dd.getDeathTime() + "  Drops: " + dd.getDrops().size() + "\n");
 		}
 		return sb.toString();

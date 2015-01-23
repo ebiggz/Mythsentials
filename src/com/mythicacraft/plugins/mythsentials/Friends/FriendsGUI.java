@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -65,7 +66,7 @@ public class FriendsGUI implements GUI {
 		ItemMeta im = infoSign.getItemMeta(); //Item meta contains options for display name and lore text
 		im.setDisplayName(ChatColor.YELLOW + "" + ChatColor.UNDERLINE + "Details");
 		im.setLore(Arrays.asList(ChatColor.GOLD + "" + onlinePlayers.size() + "/" + friends.size() + " Online", "*Click for command help*"));
-		infoSign.setItemMeta(im); // apple item meta to item stack
+		infoSign.setItemMeta(im); // apply item meta to item stack
 		inventory.addItem(infoSign); // Add item to inventory
 
 		// Generate player heads for each friend
@@ -98,11 +99,25 @@ public class FriendsGUI implements GUI {
 			friendHead.setItemMeta(sim);
 			inventory.addItem(friendHead);
 		}
+
+		for(String friendName : offlinePlayers) {
+			ItemStack friendHead = playerHead.clone();
+			SkullMeta sim = (SkullMeta) friendHead.getItemMeta();
+			sim.setOwner(friendName);
+			List<String> lore = new ArrayList<String>();
+			sim.setDisplayName(ChatColor.RED + friendName);
+			lore.add(ChatColor.GRAY + "Offline");
+			sim.setLore(lore);
+			friendHead.setItemMeta(sim);
+			inventory.addItem(friendHead);
+		}
 		return inventory;
 
 	}
 
-	public void onInventoryClick(Player whoClicked, int clickedSlot, ItemStack clickedItem) {
+	public void onInventoryClick(Player whoClicked, InventoryClickEvent clickEvent) {
+		int clickedSlot = clickEvent.getSlot();
+		ItemStack clickedItem = clickEvent.getInventory().getItem(clickedSlot);
 		//check if clicked item is a player head
 		if(clickedItem != null && clickedItem.getType() == Material.SKULL_ITEM) {
 			String friendName = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
@@ -116,5 +131,10 @@ public class FriendsGUI implements GUI {
 			whoClicked.performCommand("friends help");
 			whoClicked.closeInventory();
 		}
+	}
+
+	@Override
+	public boolean shouldAutoCancel() {
+		return true;
 	}
 }

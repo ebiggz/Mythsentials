@@ -54,10 +54,12 @@ import com.mythicacraft.plugins.mythsentials.Censor.CensoredWord;
 import com.mythicacraft.plugins.mythsentials.Compass.CompassInfoPanel;
 import com.mythicacraft.plugins.mythsentials.Compass.CompassTarget;
 import com.mythicacraft.plugins.mythsentials.Compass.PlayerTarget;
+import com.mythicacraft.plugins.mythsentials.DeathLedger.DeathListener;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonChecker;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonListener;
 import com.mythicacraft.plugins.mythsentials.Friends.FriendsCmds;
 import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIListener;
+import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIUtils;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.ChannelChat;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.HerochatJSONHandler;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.JsonStream;
@@ -81,6 +83,7 @@ import com.mythicacraft.plugins.mythsentials.MiscListeners.NoFallDamage;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.PlayerListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.UnleashListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.UnregNotifier;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.MailCommands;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.BoardListener;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.MythiboardManager;
 import com.mythicacraft.plugins.mythsentials.MythiboardEntries.BankSBEntry;
@@ -239,6 +242,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new MobCopyListener(), this);
 		pm.registerEvents(new WeatherListener(), this);
 		pm.registerEvents(new CensorListener(), this);
+		pm.registerEvents(new DeathListener(), this);
 		pm.registerEvents(new BoardListener(), this);
 		pm.registerEvents(new GUIListener(), this);
 
@@ -251,7 +255,7 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("playerinfo").setExecutor(new AdminTools());
 		getCommand("pi").setExecutor(new AdminTools());
 		getCommand("chunkcheck").setExecutor(new AdminTools());
-		getCommand("deathdrops").setExecutor(new AdminTools());
+		getCommand("deathlogs").setExecutor(new AdminTools());
 		getCommand("loginlocation").setExecutor(new AdminTools());
 		getCommand("mobselect").setExecutor(new AdminTools());
 		getCommand("mobtp").setExecutor(new AdminTools());
@@ -293,12 +297,15 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("twitter").setExecutor(new TwitterCmds());
 		getCommand("store").setExecutor(new PurchaseCmds());
 		getCommand("friends").setExecutor(new FriendsCmds());
+		getCommand("mail").setExecutor(new MailCommands());
 
 		addCensoredWords();
 		addCensoredWordsFunny();
 
 		//initiate the utils class
 		new Utils(this);
+
+		new GUIUtils();
 
 		//start thread to talk to connected desktop client
 		/*Thread appCommun = new AppCommuncatior();

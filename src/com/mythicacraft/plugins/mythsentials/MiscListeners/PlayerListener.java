@@ -1,6 +1,5 @@
 package com.mythicacraft.plugins.mythsentials.MiscListeners;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -20,7 +19,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.kitteh.vanish.event.VanishStatusChangeEvent;
@@ -28,7 +26,6 @@ import org.kitteh.vanish.event.VanishStatusChangeEvent;
 import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
-import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.NotificationStreamMessage;
 import com.mythicacraft.plugins.mythsentials.Utilities.Time;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
@@ -118,6 +115,9 @@ public class PlayerListener implements Listener {
 
 		final Player p = event.getPlayer();
 
+		String command = "title %player% title {\"text\":\"\",\"extra\":[{\"text\":\"MythicaCraft\",\"color\":\"yellow\",\"bold\":\"true\"}]}";
+		Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("%player%", p.getName()));
+
 		if(!p.hasPlayedBefore()) {
 			Mythsentials.notificationStream.addMessage(new NotificationStreamMessage("newplayer", p.getName(), null));
 			Utils.playerNotify("mythica.helpreceive", ChatColor.RED + "[ModMessage] " + ChatColor.GOLD + p.getDisplayName() + ChatColor.YELLOW + " is new!");
@@ -139,10 +139,9 @@ public class PlayerListener implements Listener {
 			@Override
 			public void run() {
 				p.sendMessage(ChatColor.YELLOW + "[Mythica] "+ ChatColor.GREEN + "Last tweet from @MythicaCraft: " + ChatColor.WHITE + Utils.getLastTweet() + "\n" + ChatColor.GRAY + " Type /twitter to see more tweets.");
-				/*Utils.offlineBalanceChangeCheck(p);
-				Utils.modMessage(p);*/
 			}
-		}, 15L);
+		}, 10L);
+
 
 		String worldType = MythicaSpawn.getSpawnManager().getWorldType(p.getWorld());
 		if(worldType.equalsIgnoreCase("pvp") || worldType.equalsIgnoreCase("minigames")) {
@@ -198,24 +197,7 @@ public class PlayerListener implements Listener {
 	public void onDeath(PlayerDeathEvent event) {
 		String playerName = event.getEntity().getName();
 		Mythian mythian = Mythsentials.getMythianManager().getMythian(playerName);
-
 		mythian.setLastDeathLoc(event.getEntity().getLocation());
-
-		List<ItemStack> drops = event.getDrops();
-
-		if(drops.size() > 3) {
-
-			Location death = event.getEntity().getLocation();
-			String deathWorld = event.getEntity().getWorld().getName();
-			String deathLoc = Integer.toString((int) death.getX()) + "," + Integer.toString((int) death.getY()) + "," + Integer.toString((int) death.getZ()) + "," + death.getWorld().getName();
-			List<ItemStack> armor = Arrays.asList(event.getEntity().getInventory().getArmorContents());
-
-			String reason = event.getDeathMessage().replace(playerName, "Player").trim();
-			String time = Time.dateAndTimeFromMills(Time.timeInMillis());
-
-			PlayerDeathDrop thisDeath = new PlayerDeathDrop(playerName, drops, armor, deathLoc, deathWorld, reason, time);
-			mythian.addNewDeathDrop(thisDeath);
-		}
 	}
 
 	@EventHandler (priority = EventPriority.HIGHEST)

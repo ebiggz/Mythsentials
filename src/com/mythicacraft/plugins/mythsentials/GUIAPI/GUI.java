@@ -1,8 +1,8 @@
 package com.mythicacraft.plugins.mythsentials.GUIAPI;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 
 public interface GUI {
@@ -11,6 +11,9 @@ public interface GUI {
 	public Inventory createInventory(Player player);
 
 	// handle when a player clicks on something
-	public void onInventoryClick(Player whoClicked, int clickedSlot, ItemStack clickedItem);
+	public void onInventoryClick(Player whoClicked, InventoryClickEvent clickedEvent);
+
+	//whether or not the API should auto cancel click events
+	public boolean shouldAutoCancel();
 
 }

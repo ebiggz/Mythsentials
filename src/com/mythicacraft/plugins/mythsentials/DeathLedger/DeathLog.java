@@ -1,4 +1,4 @@
-package com.mythicacraft.plugins.mythsentials.AdminTools;
+package com.mythicacraft.plugins.mythsentials.DeathLedger;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -6,11 +6,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
 
-public class PlayerDeathDrop implements Comparable<Object>{
+public class DeathLog implements Comparable<Object>{
 
 	private String player;
 	private String deathTime;
@@ -21,7 +22,7 @@ public class PlayerDeathDrop implements Comparable<Object>{
 	private String reason;
 
 	@SuppressWarnings("unchecked")
-	public PlayerDeathDrop(String playername, ConfigurationSection deathDropData) {
+	public DeathLog(String playername, ConfigurationSection deathDropData) {
 		this.player = playername;
 		if(deathDropData.contains("Drops")) {
 			this.drops = (List<ItemStack>) deathDropData.getList("Drops");
@@ -43,7 +44,7 @@ public class PlayerDeathDrop implements Comparable<Object>{
 		}
 	}
 
-	public PlayerDeathDrop(String playerName, List<ItemStack> drops, List<ItemStack> armor, String deathLoc, String world, String reason, String time) {
+	public DeathLog(String playerName, List<ItemStack> drops, List<ItemStack> armor, String deathLoc, String world, String reason, String time) {
 		this.player = playerName;
 		this.drops = drops;
 		this.armor = armor;
@@ -100,8 +101,14 @@ public class PlayerDeathDrop implements Comparable<Object>{
 	}
 
 	public boolean hasArmor() {
-		if(armor == null || armor.isEmpty()) return false;
-		return true;
+		if(armor != null || !armor.isEmpty()) {
+			for(ItemStack item : armor) {
+				if(item != null && item.getType() != Material.AIR) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public String getDeathLoc() {
@@ -128,7 +135,7 @@ public class PlayerDeathDrop implements Comparable<Object>{
 		formatter = new SimpleDateFormat("M/d/yy h:mm a");
 		try {
 			date1 = (Date) formatter.parse(deathTime);
-			PlayerDeathDrop other = (PlayerDeathDrop) o;
+			DeathLog other = (DeathLog) o;
 			date2 = (Date) formatter.parse(other.getDeathTime());
 		} catch (ParseException e) {
 			e.printStackTrace();

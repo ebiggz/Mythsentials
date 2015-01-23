@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -30,8 +31,8 @@ import com.gmail.mythicacraft.mythicaspawn.MythicaSpawn;
 import com.gmail.mythicacraft.mythicaspawn.SpawnManager;
 import com.mythicacraft.plugins.mythsentials.Mythian;
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
-import com.mythicacraft.plugins.mythsentials.AdminTools.PlayerDeathDrop;
 import com.mythicacraft.plugins.mythsentials.Censor.CensoredWord;
+import com.mythicacraft.plugins.mythsentials.DeathLedger.DeathLog;
 
 public class Utils {
 
@@ -52,6 +53,24 @@ public class Utils {
 			}
 		}
 	}
+
+	public static void messagePlayerIfOnline(String playerName, String message) {
+		Player player = Bukkit.getPlayer(playerName);
+		if(player != null && player.isOnline()) {
+			player.sendMessage(message);
+		}
+	}
+
+	public static boolean playerHasArmor(Player player) {
+		ItemStack[] contents = player.getInventory().getArmorContents();
+		for(ItemStack item : contents) {
+			if(item != null && item.getType() != Material.AIR) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	public static String getLastTweet() {
 		Twitter twitter = Mythsentials.getTwitter();
@@ -296,15 +315,15 @@ public class Utils {
 		player.sendMessage(message);
 	}
 
-	public static List<PlayerDeathDrop> getPlayerDeathDrops(String playerName) {
+	public static List<DeathLog> getPlayerDeathDrops(String playerName) {
 		ConfigAccessor playerData = new ConfigAccessor("players.yml");
 		ConfigurationSection cs = playerData.getConfig().getConfigurationSection(playerName + ".lastDeathDrops");
-		List<PlayerDeathDrop> dropsList = new ArrayList<PlayerDeathDrop>();
+		List<DeathLog> dropsList = new ArrayList<DeathLog>();
 		if(cs != null) {
 			for(String deathDrop: cs.getKeys(false)) {
 				ConfigurationSection deathDropData = playerData.getConfig().getConfigurationSection(playerName + ".lastDeathDrops." + deathDrop);
 				if(deathDropData != null) {
-					dropsList.add(new PlayerDeathDrop(playerName, deathDropData));
+					dropsList.add(new DeathLog(playerName, deathDropData));
 				}
 			}
 			while(dropsList.size() >= 10) {
