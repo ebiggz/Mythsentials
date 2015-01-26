@@ -95,10 +95,12 @@ public class Mythian {
 		} else {
 			boxType = "sent";
 		}
+		playerData.getConfig().set("mailbox." + boxType, null);
+		playerData.saveConfig();
 		Collections.sort(box);
 		int count = 1;
-		mailLoop: for(Mail mail : box) {
-			if(count <= 50) {
+		for(Mail mail : box) {
+			if(count <= 100) {
 				playerData.getConfig().set("mailbox." + boxType + "." + count + ".from", mail.getFrom());
 				playerData.getConfig().set("mailbox." + boxType + "." + count + ".to", mail.getTo());
 				playerData.getConfig().set("mailbox." + boxType + "." + count + ".type", mail.getType().toString());
@@ -114,9 +116,11 @@ public class Mythian {
 				else if(mail.getType() == MailType.EXPERIENCE) {
 					playerData.getConfig().set("mailbox." + boxType + "." + count + ".xp", ((Experience) mail).getExperience());
 				}
-			} else { break mailLoop; }
-			playerData.saveConfig();
-			count++;
+				playerData.saveConfig();
+				count++;
+			} else {
+				break;
+			}
 		}
 	}
 
@@ -131,11 +135,11 @@ public class Mythian {
 			boxType = "sent";
 		}
 
-		ConfigurationSection boxSection = playerData.getConfig().getConfigurationSection(boxType);
+		ConfigurationSection boxSection = playerData.getConfig().getConfigurationSection("mailbox." + boxType);
 		List<Mail> box = new ArrayList<Mail>();
 		if(boxSection != null) {
 			for(String mailNumber: boxSection.getKeys(false)) {
-				ConfigurationSection mailData = playerData.getConfig().getConfigurationSection(boxType + "." + mailNumber);
+				ConfigurationSection mailData = playerData.getConfig().getConfigurationSection("mailbox." + boxType + "." + mailNumber);
 				if(mailData != null) {
 
 					String to = mailData.getString("to");
@@ -181,6 +185,33 @@ public class Mythian {
 	public void saveMailDropbox(List<ItemStack> items) {
 		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
 		playerData.getConfig().set("mailbox.dropbox", items);
+		playerData.saveConfig();
+	}
+
+	public void saveMailboxLoc(String locString) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		List<String> locs = getMailboxLocs();
+		locs.add(locString);
+		playerData.getConfig().set("mailbox.locations", locs);
+		playerData.saveConfig();
+	}
+
+	public List<String> getMailboxLocs() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		return playerData.getConfig().contains("mailbox.locations") ? playerData.getConfig().getStringList("mailbox.locations") : new ArrayList<String>();
+	}
+
+	public void deleteMailboxLoc(String locString) {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		List<String> locs = getMailboxLocs();
+		locs.remove(locString);
+		playerData.getConfig().set("mailbox.locations", locs);
+		playerData.saveConfig();
+	}
+
+	public void clearMailboxLocs() {
+		ConfigAccessor playerData = new ConfigAccessor("players" + File.separator + playerName + ".yml");
+		playerData.getConfig().set("mailbox.locations", null);
 		playerData.saveConfig();
 	}
 

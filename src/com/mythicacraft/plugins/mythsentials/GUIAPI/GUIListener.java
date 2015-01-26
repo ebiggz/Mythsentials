@@ -19,7 +19,7 @@ public class GUIListener implements Listener {
 		Player p = (Player) e.getWhoClicked();
 		if(gm.playerHasGUIOpen(p)){
 			GUI gui = gm.getPlayersCurrentGUI(p);
-			if(e.getRawSlot() > e.getInventory().getSize() && gui.shouldAutoCancel()) return;
+			if(e.getRawSlot() > e.getInventory().getSize()) return;
 			e.setCancelled(true);
 			gui.onInventoryClick(p, e);
 		}
@@ -31,7 +31,9 @@ public class GUIListener implements Listener {
 		if (!(e.getPlayer() instanceof Player)) return;
 		Player p = (Player) e.getPlayer();
 		if(gm.playerHasGUIOpen(p)){
+			GUI gui = gm.getPlayersCurrentGUI(p);
 			gm.playerClosedGUI(p);
+			gui.onInventoryClose(p, e);
 		}
 	}
 }

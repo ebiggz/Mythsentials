@@ -23,7 +23,7 @@ public class ConfigAccessor {
 			throw new IllegalArgumentException("plugin cannot be null");
 		this.fileName = fileName;
 		folderPath = plugin.getDataFolder().getAbsolutePath() + File.separator + "data";
-		configFile = new File(folderPath + File.separator + fileName);;
+		configFile = new File(folderPath + File.separator + fileName);
 	}
 
 	public void reloadConfig() {

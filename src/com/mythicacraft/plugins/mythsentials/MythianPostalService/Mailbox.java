@@ -21,7 +21,7 @@ public class Mailbox {
 	private List<Mail> sent;
 	private List<ItemStack> dropbox;
 
-	public Mailbox(String owner) {
+	Mailbox(String owner) {
 		this.owner = owner;
 		Mythian mythian = Mythsentials.getMythianManager().getMythian(owner);
 		inbox = mythian.loadPlayerMailboxType(MailboxType.INBOX);
@@ -33,12 +33,50 @@ public class Mailbox {
 		return owner;
 	}
 
-	public List<Mail> getInbox() {
-		return inbox;
+	public List<Mail> getBoxFromType(MailboxType type) {
+		if(type == MailboxType.INBOX) {
+			return inbox;
+		} else {
+			return sent;
+		}
 	}
 
-	public List<Mail> getOutbox() {
-		return sent;
+	public void updateMailItem(Mail mail, int index, MailboxType type) {
+		reloadBoxType(type);
+		if(type == MailboxType.INBOX) {
+			inbox.set(index, mail);
+		} else {
+			sent.set(index, mail);
+		}
+		saveBoxType(type);
+	}
+
+	public void deleteMailItem(int index, MailboxType type) {
+		reloadBoxType(type);
+		if(type == MailboxType.INBOX) {
+			inbox.remove(index);
+		} else {
+			sent.remove(index);
+		}
+		saveBoxType(type);
+	}
+
+	private void reloadBoxType(MailboxType type) {
+		Mythian mythian = Mythsentials.getMythianManager().getMythian(owner);
+		if(type == MailboxType.INBOX) {
+			inbox = mythian.loadPlayerMailboxType(MailboxType.INBOX);
+		} else {
+			sent = mythian.loadPlayerMailboxType(MailboxType.SENT);
+		}
+	}
+
+	public void saveBoxType(MailboxType type) {
+		Mythian mythian = Mythsentials.getMythianManager().getMythian(owner);
+		if(type == MailboxType.INBOX) {
+			mythian.savePlayerMailboxType(inbox, MailboxType.INBOX);
+		} else {
+			mythian.savePlayerMailboxType(sent, MailboxType.SENT);
+		}
 	}
 
 	public List<ItemStack> getDropbox() {
@@ -51,8 +89,7 @@ public class Mailbox {
 	}
 
 	public void clearDropbox() {
-		List<ItemStack> empty = new ArrayList<ItemStack>();
-		saveDropbox(empty);
+		saveDropbox(new ArrayList<ItemStack>());
 	}
 
 	public int getUnreadMailCount() {
@@ -74,6 +111,6 @@ public class Mailbox {
 		Mythian mythian = Mythsentials.getMythianManager().getMythian(owner);
 		inbox.add(mail);
 		mythian.savePlayerMailboxType(inbox, MailboxType.INBOX);
-		Utils.messagePlayerIfOnline(owner, ChatColor.YELLOW + "[Mythica] " + ChatColor.GOLD + "You just recieved mail! Visit your nearest mailbox to read it.");
+		Utils.messagePlayerIfOnline(owner, ChatColor.YELLOW + "[Mythica] " + ChatColor.DARK_AQUA + "You just recieved mail from " + ChatColor.AQUA + mail.getFrom() + ChatColor.DARK_AQUA + "! Visit your nearest mailbox to read it.");
 	}
 }

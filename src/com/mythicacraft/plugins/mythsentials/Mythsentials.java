@@ -84,11 +84,13 @@ import com.mythicacraft.plugins.mythsentials.MiscListeners.PlayerListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.UnleashListener;
 import com.mythicacraft.plugins.mythsentials.MiscListeners.UnregNotifier;
 import com.mythicacraft.plugins.mythsentials.MythianPostalService.MailCommands;
+import com.mythicacraft.plugins.mythsentials.MythianPostalService.MailboxListener;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.BoardListener;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.MythiboardManager;
 import com.mythicacraft.plugins.mythsentials.MythiboardEntries.BankSBEntry;
 import com.mythicacraft.plugins.mythsentials.MythiboardEntries.FriendsSBEntry;
 import com.mythicacraft.plugins.mythsentials.MythiboardEntries.StaffSBEntry;
+import com.mythicacraft.plugins.mythsentials.MythiboardEntries.UnreadMailSBEntry;
 import com.mythicacraft.plugins.mythsentials.Pets.PetCmdProperties;
 import com.mythicacraft.plugins.mythsentials.Pets.PetCmds;
 import com.mythicacraft.plugins.mythsentials.Pets.PetSelectListener;
@@ -103,6 +105,7 @@ import com.mythicacraft.plugins.mythsentials.Store.StoreManager;
 import com.mythicacraft.plugins.mythsentials.Unenchant.UnenchantCmd;
 import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 import com.mythicacraft.plugins.mythsentials.Utilities.JarUtils;
+import com.mythicacraft.plugins.mythsentials.Utilities.SetExpFix;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 import com.mythicacraft.plugins.mythsentials.Weather.WeatherCommands;
 import com.mythicacraft.plugins.mythsentials.Weather.WeatherListener;
@@ -134,6 +137,7 @@ public class Mythsentials extends JavaPlugin {
 	public static HashMap<Player, PIMenuData> playerInfoMenus = new HashMap<Player, PIMenuData>();
 
 	private static HashMap<String, String> worldAndGamemodes = new HashMap<String, String>();
+	private static HashMap<String, Integer> permGroupMailboxMax = new HashMap<String, Integer>();
 
 	public static Economy economy = null;
 	public static Chat chat = null;
@@ -207,6 +211,7 @@ public class Mythsentials extends JavaPlugin {
 		loadIRCLogFile();
 		loadPeriodicAnnouncements();
 		loadLoginAnnouncements();
+		loadMailboxLoctationsFile();
 
 
 		//make irc spirebot
@@ -245,6 +250,7 @@ public class Mythsentials extends JavaPlugin {
 		pm.registerEvents(new DeathListener(), this);
 		pm.registerEvents(new BoardListener(), this);
 		pm.registerEvents(new GUIListener(), this);
+		pm.registerEvents(new MailboxListener(), this);
 
 		//register all the commands
 		getCommand("register").setExecutor(new Registration(this));
@@ -298,14 +304,15 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("store").setExecutor(new PurchaseCmds());
 		getCommand("friends").setExecutor(new FriendsCmds());
 		getCommand("mail").setExecutor(new MailCommands());
+		getCommand("mailbox").setExecutor(new MailCommands());
 
 		addCensoredWords();
 		addCensoredWordsFunny();
 
 		//initiate the utils class
 		new Utils(this);
-
 		new GUIUtils();
+		new SetExpFix();
 
 		//start thread to talk to connected desktop client
 		/*Thread appCommun = new AppCommuncatior();
@@ -313,7 +320,7 @@ public class Mythsentials extends JavaPlugin {
 
 		MythiboardManager boardManager = Mythsentials.getMythiboardManager();
 		boardManager.registerScoreboardEntry(new BankSBEntry());
-		//boardManager.registerScoreboardEntry(new BalanceSBEntry());
+		boardManager.registerScoreboardEntry(new UnreadMailSBEntry());
 		boardManager.registerScoreboardEntry(new FriendsSBEntry());
 		boardManager.registerScoreboardEntry(new StaffSBEntry());
 
@@ -440,6 +447,16 @@ public class Mythsentials extends JavaPlugin {
 				for(String world : worldGametypeSection.getKeys(false)) {
 					String gameType = worldGametypeSection.getString(world);
 					Mythsentials.worldAndGamemodes.put(world, gameType);
+				}
+			}
+
+			//load permgroup/maxmailbox Relationships
+			ConfigurationSection mailboxMaxSection = getConfig().getConfigurationSection("mailbox-max");
+			Mythsentials.permGroupMailboxMax.clear();
+			if(mailboxMaxSection != null) {
+				for(String group : mailboxMaxSection.getKeys(false)) {
+					int max = mailboxMaxSection.getInt(group);
+					Mythsentials.permGroupMailboxMax.put(group, max);
 				}
 			}
 
@@ -626,6 +643,11 @@ public class Mythsentials extends JavaPlugin {
 		}
 	}
 
+	private void loadMailboxLoctationsFile() {
+		String pluginFolderPath = this.getDataFolder().getAbsolutePath() + File.separator + "data";
+		createFile(pluginFolderPath,"mailbox-locations.yml");
+	}
+
 	private void createFile(String path, String fileName) {
 		(new File(path)).mkdirs();
 		File file = new File(path + File.separator + fileName);
@@ -738,6 +760,14 @@ public class Mythsentials extends JavaPlugin {
 			return Mythsentials.worldAndGamemodes.get(worldName);
 		} else {
 			return null;
+		}
+	}
+
+	public static int getMaxMailboxesForGroup(String group) {
+		if(Mythsentials.permGroupMailboxMax.containsKey(group)) {
+			return Mythsentials.permGroupMailboxMax.get(group);
+		} else {
+			return 1;
 		}
 	}
 

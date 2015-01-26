@@ -161,6 +161,9 @@ commands:
     mail:
         description: chunk indexer.
         usage: /<command>
+    mailbox:
+        description: chunk indexer.
+        usage: /<command>
 permissions:
     mythica.censorchat.self:
         default: true

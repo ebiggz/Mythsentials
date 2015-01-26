@@ -31,7 +31,7 @@ public class FancyMenu {
 				//get tellraw type
 				String command;
 				if(entryData[0].equals("run")) {
-					command =  tellRawRun;
+					command = tellRawRun;
 				} else {
 					command = tellRawSuggest;
 				}
