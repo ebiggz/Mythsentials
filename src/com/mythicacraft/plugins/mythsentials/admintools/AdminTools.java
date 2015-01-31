@@ -34,6 +34,11 @@ import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.DeathLedger.DeathLog;
 import com.mythicacraft.plugins.mythsentials.DeathLedger.LogListGUI;
 import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIManager;
+import com.mythicacraft.plugins.mythsentials.InteractiveMessageAPI.FormattedText;
+import com.mythicacraft.plugins.mythsentials.InteractiveMessageAPI.InteractiveMessage;
+import com.mythicacraft.plugins.mythsentials.InteractiveMessageAPI.InteractiveMessageElement;
+import com.mythicacraft.plugins.mythsentials.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
+import com.mythicacraft.plugins.mythsentials.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.mythicacraft.plugins.mythsentials.Utilities.Time;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
 
@@ -45,7 +50,22 @@ public class AdminTools implements CommandExecutor {
 			sender.sendMessage(ChatColor.RED + "You don't have permission for this!");
 			return true;
 		}
-		if(commandLabel.equalsIgnoreCase("toolbox")) {
+		if(commandLabel.equalsIgnoreCase("test")) {
+			Player player = (Player) sender;
+
+			InteractiveMessage im = new InteractiveMessage();
+			im.addElement("This is a test...", ChatColor.AQUA);
+			im.addElement(
+					new InteractiveMessageElement(
+							new FormattedText("hover over and click me!", ChatColor.DARK_AQUA).setBold(true),
+							HoverEvent.SHOW_TEXT,
+							new FormattedText("hover text", ChatColor.GREEN).setItalic(true),
+							ClickEvent.SUGGEST_COMMAND,
+							"/suggested command!"
+							));
+			im.sendTo(player);
+
+			return true;
 
 		}
 		if(commandLabel.equalsIgnoreCase("chunkcheck")) {

@@ -136,4 +136,10 @@ public class FriendsGUI implements GUI {
 
 	@Override
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {}
+
+	@Override
+	public boolean ignoreForeignItems() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

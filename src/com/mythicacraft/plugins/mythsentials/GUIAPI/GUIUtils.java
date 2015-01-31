@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -32,5 +33,14 @@ public class GUIUtils {
 		}
 		item.setItemMeta(im);
 		return item;
+	}
+
+	public static void removeForeignItems(Player viewer, List<ItemStack> original, Inventory afterClose) {
+		for(ItemStack item : afterClose.getContents()) {
+			if(item == null) continue;
+			if(original.contains(item)) continue;
+			viewer.getWorld().dropItemNaturally(viewer.getLocation(), item);
+			afterClose.remove(item);
+		}
 	}
 }

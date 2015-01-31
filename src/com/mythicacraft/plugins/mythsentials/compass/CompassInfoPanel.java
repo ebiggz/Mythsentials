@@ -22,6 +22,7 @@ public class CompassInfoPanel extends BukkitRunnable {
 	private Score height;
 	private ScoreboardManager manager = Bukkit.getScoreboardManager();
 
+	@SuppressWarnings("deprecation")
 	public CompassInfoPanel(Player user) {
 		this.user = user;
 		board = manager.getNewScoreboard();

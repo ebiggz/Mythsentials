@@ -108,4 +108,9 @@ public class DeathLogGUI implements GUI {
 
 	@Override
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {}
+
+	@Override
+	public boolean ignoreForeignItems() {
+		return false;
+	}
 }

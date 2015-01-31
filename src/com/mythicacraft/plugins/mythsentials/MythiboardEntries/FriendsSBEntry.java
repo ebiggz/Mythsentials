@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.ScoreboardEntry;
@@ -35,5 +36,11 @@ public class FriendsSBEntry implements ScoreboardEntry {
 	public String getCommand() {
 		// TODO Auto-generated method stub
 		return "/friends";
+	}
+
+	@Override
+	public ItemStack getButton(Player player) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -43,6 +43,11 @@ public class CommandAliases implements Listener {
 			event.setMessage(newCommand);
 		}
 
+		else if(command.equalsIgnoreCase("/me")) {
+			String newCommand = "/mystuff";
+			event.setMessage(newCommand);
+		}
+
 		else if(command.equalsIgnoreCase("/res select max")) {
 			String newCommand = "/resmax";
 			event.setMessage(newCommand);

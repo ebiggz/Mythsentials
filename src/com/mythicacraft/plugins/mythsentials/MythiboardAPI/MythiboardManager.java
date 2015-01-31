@@ -1,6 +1,7 @@
 package com.mythicacraft.plugins.mythsentials.MythiboardAPI;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,10 +29,15 @@ public class MythiboardManager {
 		entries.add(se);
 	}
 
-	public void reregisterScoreboardEntry(ScoreboardEntry se) {
+	public void deregisterScoreboardEntry(ScoreboardEntry se) {
 		entries.remove(se);
 	}
 
+	public List<ScoreboardEntry> getEntries() {
+		return entries;
+	}
+
+	@SuppressWarnings("deprecation")
 	public Scoreboard getMythiboard(Player player) {
 		Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
 		board.registerNewObjective("InfoPanel", "dummy");
@@ -39,13 +45,7 @@ public class MythiboardManager {
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		objective.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "MythicaCraft");
 
-		/*int commandCount = 0;
-		for(ScoreboardEntry entry : entries) {
-			String command = entry.getCommand();
-			if(command != null && !command.isEmpty()) commandCount++;
-		}*/
-
-		int count = (entries.size()*3) - 1 /*+ commandCount*/;
+		int count = (entries.size()*3);
 		int blankCount = 1;
 
 		for(ScoreboardEntry entry : entries) {
@@ -55,32 +55,16 @@ public class MythiboardManager {
 
 			if(key == null || key.isEmpty() || value == null || value.isEmpty()) {count -= 2; continue;}
 
-			/*if(key.length() > 16) {
-				key = key.substring(0, 13) + "...";
-			}
-			if(value.length() > 16) {
-				value = value.substring(0, 13) + "...";
-				continue;
-			}*/
-
 			objective.getScore(Bukkit.getOfflinePlayer(key)).setScore(count);
 			count--;
 			objective.getScore(Bukkit.getOfflinePlayer(value)).setScore(count);
 			count--;
-
-			/*String command = entry.getCommand();
-			if(command != null && !command.isEmpty()) {
-				objective.getScore(Bukkit.getOfflinePlayer(ChatColor.GRAY + command)).setScore(count);
-				count--;
-			}*/
-
-			if(count > 1) {
-				objective.getScore(Bukkit.getOfflinePlayer(emptyScore(blankCount))).setScore(count);
-				blankCount++;
-				count--;
-			}
+			objective.getScore(Bukkit.getOfflinePlayer(emptyScore(blankCount))).setScore(count);
+			blankCount++;
+			count--;
 
 		}
+		objective.getScore(Bukkit.getOfflinePlayer(ChatColor.GRAY + "Type " + ChatColor.WHITE + "/me" + ChatColor.GRAY + " for more.")).setScore(count);
 		return board;
 	}
 

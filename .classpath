@@ -7,10 +7,10 @@
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/Vault.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/VanishNoPacket.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/JSONAPI.jar"/>
-	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.7.2-R0.3-20131225.043429-2.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/MythicaSpawn.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/pircbot-1.5.0/pircbot.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/PermissionsEx.jar"/>
 	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/twitter4j-core-4.0.2.jar"/>
+	<classpathentry kind="lib" path="/Users/erikbigler/Documents/BukkitAPI/bukkit-1.7.9-R0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

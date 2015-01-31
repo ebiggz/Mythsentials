@@ -2,6 +2,7 @@ package com.mythicacraft.plugins.mythsentials.MythiboardEntries;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.ScoreboardEntry;
 import com.mythicacraft.plugins.mythsentials.Utilities.Utils;
@@ -30,5 +31,11 @@ public class StaffSBEntry implements ScoreboardEntry {
 		} else {
 			return "/issue create";
 		}
+	}
+
+	@Override
+	public ItemStack getButton(Player player) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

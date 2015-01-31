@@ -6,6 +6,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 
 
 public class GUIListener implements Listener {
@@ -25,6 +26,15 @@ public class GUIListener implements Listener {
 		}
 	}
 
+	@EventHandler(priority=EventPriority.MONITOR)
+	public void invDrag(InventoryDragEvent e) {
+		if (!(e.getWhoClicked() instanceof Player)) return;
+		Player p = (Player) e.getWhoClicked();
+		if(gm.playerHasGUIOpen(p)){
+			e.setCancelled(true);
+		}
+	}
+
 	//listens for when a player closes an inventory
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void invClose(InventoryCloseEvent e) {
@@ -32,8 +42,11 @@ public class GUIListener implements Listener {
 		Player p = (Player) e.getPlayer();
 		if(gm.playerHasGUIOpen(p)){
 			GUI gui = gm.getPlayersCurrentGUI(p);
-			gm.playerClosedGUI(p);
 			gui.onInventoryClose(p, e);
+			if(!gui.ignoreForeignItems()) {
+				GUIUtils.removeForeignItems(p, gm.getGUIsCurrentInv(gui), e.getInventory());
+			}
+			gm.playerClosedGUI(p);
 		}
 	}
 }

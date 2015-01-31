@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -37,13 +38,13 @@ public class DropboxGUI implements GUI {
 		}
 
 		List<String> lore = new ArrayList<String>();
-		String[] wrappedMessage = Utils.wrap("You can drag items from your inventory above the dotted line. All times in your drop box are used when you send a package to a player!", 30, "\n", true).split("\n");
+		String[] wrappedMessage = Utils.wrap("You can drag items from your inventory to anywhere above the dotted line. All times in your drop box are sent when you mail a package to a player!", 30, "\n", true).split("\n");
 		for(String line : wrappedMessage) {
 			lore.add(ChatColor.WHITE + line);
 		}
 		ItemStack infoSign = GUIUtils.createButton(
 				Material.SIGN,
-				ChatColor.YELLOW +""+ ChatColor.UNDERLINE + "Help",
+				ChatColor.YELLOW +""+ ChatColor.UNDERLINE + "Drop Box Help",
 				lore);
 		inventory.setItem(39, infoSign);
 
@@ -66,7 +67,13 @@ public class DropboxGUI implements GUI {
 		} else {
 			if(clickedEvent.getSlot() == 40) {
 				if(clickedItem != null && clickedItem.getType() != Material.AIR) {
-					GUIManager.getInstance().showGUI(new MailboxGUI(), whoClicked);
+					if(clickedEvent.getClick() == ClickType.RIGHT) {
+						GUIManager.getInstance().showGUI(new MailboxGUI(), whoClicked);
+					} else {
+						whoClicked.closeInventory();
+						String command = "tellraw {player} {\"text\":\"\",\"extra\":[{\"text\":\"[MPS] Click to compose: \",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"\"}},{\"text\":\"Package\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail package to: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a package with items!\",\"color\":\"gold\"}]}}}]}";
+						Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("{player}", whoClicked.getName()));
+					}
 				}
 			}
 		}
@@ -86,6 +93,12 @@ public class DropboxGUI implements GUI {
 		MailboxManager.getInstance().getPlayerMailbox(whoClosed.getName()).saveDropbox(items);
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean ignoreForeignItems() {
+		// TODO Auto-generated method stub
+		return true;
 	}
 
 

@@ -107,10 +107,11 @@ public class Mailbox {
 		mythian.savePlayerMailboxType(sent, MailboxType.SENT);
 	}
 
+
 	public void receiveMail(Mail mail) {
 		Mythian mythian = Mythsentials.getMythianManager().getMythian(owner);
 		inbox.add(mail);
 		mythian.savePlayerMailboxType(inbox, MailboxType.INBOX);
-		Utils.messagePlayerIfOnline(owner, ChatColor.YELLOW + "[Mythica] " + ChatColor.DARK_AQUA + "You just recieved mail from " + ChatColor.AQUA + mail.getFrom() + ChatColor.DARK_AQUA + "! Visit your nearest mailbox to read it.");
+		Utils.messagePlayerIfOnline(owner, ChatColor.YELLOW + "[MPS] " + ChatColor.DARK_AQUA + "You just received mail from " + ChatColor.AQUA + mail.getFrom() + ChatColor.DARK_AQUA + "! Visit your nearest mailbox to read it.");
 	}
 }

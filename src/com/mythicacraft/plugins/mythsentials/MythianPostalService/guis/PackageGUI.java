@@ -108,4 +108,10 @@ public class PackageGUI implements GUI {
 
 	}
 
+	@Override
+	public boolean ignoreForeignItems() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

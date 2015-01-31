@@ -1,16 +1,19 @@
 package com.mythicacraft.plugins.mythsentials.GUIAPI;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 
 public class GUIManager {
 
 	//storage for players in guis
 	private HashMap<Player,GUI> openGUIs = new HashMap<Player,GUI>();
-	private HashMap<GUI,Inventory> guiInvs = new HashMap<GUI,Inventory>();
+	private HashMap<GUI,List<ItemStack>> guiInvs = new HashMap<GUI,List<ItemStack>>();
 
 	protected GUIManager() { /*exists to block instantiation*/ }
 	private static GUIManager instance = null;
@@ -28,7 +31,7 @@ public class GUIManager {
 		player.closeInventory();
 		openGUIs.put(player, gui);
 		Inventory inv = gui.createInventory(player);
-		guiInvs.put(gui, inv);
+		guiInvs.put(gui, Arrays.asList(inv.getContents()));
 		player.openInventory(inv);
 	}
 
@@ -38,7 +41,7 @@ public class GUIManager {
 		openGUIs.remove(player);
 	}
 
-	public Inventory getGUIsCurrentInv(GUI gui) {
+	public List<ItemStack> getGUIsCurrentInv(GUI gui) {
 		if(guiInvs.containsKey(gui)) {
 			return guiInvs.get(gui);
 		} else {
@@ -51,6 +54,12 @@ public class GUIManager {
 			return openGUIs.get(player);
 		} else {
 			return null;
+		}
+	}
+
+	public void closeAllGUIs() {
+		for(Player player : openGUIs.keySet()) {
+			player.closeInventory();
 		}
 	}
 

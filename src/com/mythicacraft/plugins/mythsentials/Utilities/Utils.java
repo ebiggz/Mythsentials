@@ -423,6 +423,7 @@ public class Utils {
 		int count = 0;
 		for(int i = 0; i < dropItems.size(); i++) {
 			ItemStack is = dropItems.get(i);
+			if(is == null) continue;
 			sb.append(is.getType().toString().toLowerCase().replace("_", " "));
 			if(is.getAmount() > 1) {
 				sb.append("(x" + is.getAmount() + ")");

@@ -2,6 +2,7 @@ package com.mythicacraft.plugins.mythsentials.MythiboardEntries;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.mythicacraft.plugins.mythsentials.Mythsentials;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.ScoreboardEntry;
@@ -45,5 +46,11 @@ public class BankSBEntry implements ScoreboardEntry {
 	@Override
 	public String getCommand() {
 		return "/money";
+	}
+
+	@Override
+	public ItemStack getButton(Player player) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

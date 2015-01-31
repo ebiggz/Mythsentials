@@ -42,6 +42,7 @@ public class CompassTarget implements CommandExecutor {
 
 	World realm = Bukkit.getWorld("The_Realm");
 
+	@SuppressWarnings("deprecation")
 	public boolean onCommand(final CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
 		//ConfigAccessor playerData = new ConfigAccessor("players.yml");
@@ -444,180 +445,180 @@ public class CompassTarget implements CommandExecutor {
 					Location death = mythian.getLastDeathLoc();
 					Player currentTrack = Utils.getTrackingPlayer(p);
 					switch(args[1].toLowerCase()) {
-					case "spire":
-						if(currentTrack != null) {
-							plugin.playerTargets.get(currentTrack).removeTracker(p);
-						}
-						p.setCompassTarget(SM.getSurvivalSpawn());
-						sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
-						if(plugin.compassInfoPanels.containsKey(p)) {
-							plugin.compassInfoPanels.get(p).setTargetName(args[1]);
-							plugin.compassInfoPanels.get(p).run();
-						}
-						return true;
-					case "spawn":
-						if(currentTrack != null) {
-							plugin.playerTargets.get(currentTrack).removeTracker(p);
-						}
-						String worldType = SM.getWorldType(p.getWorld());
-						if(worldType.equalsIgnoreCase("survival")) {
+						case "spire":
+							if(currentTrack != null) {
+								plugin.playerTargets.get(currentTrack).removeTracker(p);
+							}
 							p.setCompassTarget(SM.getSurvivalSpawn());
-						}
-						else if(worldType.equalsIgnoreCase("pvp")) {
-							p.setCompassTarget(SM.getPvpSpawn());
-						} else {
-							p.setCompassTarget(SM.getInitialSpawn());
-						}
-						sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
-						if(plugin.compassInfoPanels.containsKey(p)) {
-							plugin.compassInfoPanels.get(p).setTargetName(args[1]);
-							plugin.compassInfoPanels.get(p).run();
-						}
-						return true;
-					case "bed":
-					case "home":
-						Universe playerUniverse = SM.getWorldsUniverse(p.getWorld());
-						if(playerUniverse == Universe.SURVIVAL) {
-							home = SM.getPlayerSurvivalBed(p);
-						} else {
-							home = SM.getPlayerPvpBed(p);
-						}
-						if(home != null) {
-							p.setCompassTarget(home);
-							sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
-							if(currentTrack != null) {
-								plugin.playerTargets.get(currentTrack).removeTracker(p);
-							}
-							if(plugin.compassInfoPanels.containsKey(p)) {
-								Universe universe = MythicaSpawn.getSpawnManager().getWorldsUniverse(home.getWorld());
-								if(universe == Universe.SURVIVAL) {
-									plugin.compassInfoPanels.get(p).setTargetName("Survival Bed");
-								} else {
-									plugin.compassInfoPanels.get(p).setTargetName("PvP Bed");
-								}
-								plugin.compassInfoPanels.get(p).run();
-							}
-						} else {
-							p.sendMessage(ChatColor.RED + "Home/bed not set!");
-						}
-						return true;
-					case "death":
-						if(death != null) {
-							if(currentTrack != null) {
-								plugin.playerTargets.get(currentTrack).removeTracker(p);
-							}
-							p.setCompassTarget(death);
 							sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
 							if(plugin.compassInfoPanels.containsKey(p)) {
-								plugin.compassInfoPanels.get(p).setTargetName("Last Death");
+								plugin.compassInfoPanels.get(p).setTargetName(args[1]);
 								plugin.compassInfoPanels.get(p).run();
 							}
-						} else {
-							sender.sendMessage(ChatColor.RED + "Could not find a previous death.");
-						}
-						return true;
-					case "deathpoint":
-						if(death != null) {
-							if(currentTrack != null) {
-								plugin.playerTargets.get(currentTrack).removeTracker(p);
-							}
-							p.setCompassTarget(death);
-							sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
-							if(plugin.compassInfoPanels.containsKey(p)) {
-								plugin.compassInfoPanels.get(p).setTargetName("Last Death");
-								plugin.compassInfoPanels.get(p).run();
-							}
-						} else {
-							sender.sendMessage(ChatColor.RED + "Could not find a previous death.");
-						}
-						return true;
-					default:
-						//check if arg[1] matches a custom target first
-						Set<String> targets = null;
-						targets = mythian.getCompassTargetNames();
-
-						if (targets != null) {
-							for (String targetName : targets) {
-								if(targetName.equals(args[1])) {
-									if(currentTrack != null) {
-										plugin.playerTargets.get(currentTrack).removeTracker(p);
-									}
-									Location targetLoc = mythian.getCompassTarget(targetName);
-									p.setCompassTarget(targetLoc);
-									sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
-									if(plugin.compassInfoPanels.containsKey(p)) {
-										plugin.compassInfoPanels.get(p).setTargetName(args[1]);
-										plugin.compassInfoPanels.get(p).run();
-									}
-									return true;
-
-								}
-							}
-						}
-
-						//then check for a playername
-						String playername = completeName(args[1]);
-						if(playername == null) {
-							sender.sendMessage(ChatColor.RED + "Could not find a target for: " + args[1] + ", Check /compass targets");
-							break;
-						}
-
-						if(playername.equals(sender.getName())) {
-							sender.sendMessage(ChatColor.RED + "No need to track yourself!");
 							return true;
-						}
-
-						final Player target = Bukkit.getPlayer(playername);
-						if(target == null) {
-							sender.sendMessage(ChatColor.RED + "Player is not online!");
+						case "spawn":
+							if(currentTrack != null) {
+								plugin.playerTargets.get(currentTrack).removeTracker(p);
+							}
+							String worldType = SM.getWorldType(p.getWorld());
+							if(worldType.equalsIgnoreCase("survival")) {
+								p.setCompassTarget(SM.getSurvivalSpawn());
+							}
+							else if(worldType.equalsIgnoreCase("pvp")) {
+								p.setCompassTarget(SM.getPvpSpawn());
+							} else {
+								p.setCompassTarget(SM.getInitialSpawn());
+							}
+							sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
+							if(plugin.compassInfoPanels.containsKey(p)) {
+								plugin.compassInfoPanels.get(p).setTargetName(args[1]);
+								plugin.compassInfoPanels.get(p).run();
+							}
 							return true;
-						}
+						case "bed":
+						case "home":
+							Universe playerUniverse = SM.getWorldsUniverse(p.getWorld());
+							if(playerUniverse == Universe.SURVIVAL) {
+								home = SM.getPlayerSurvivalBed(p);
+							} else {
+								home = SM.getPlayerPvpBed(p);
+							}
+							if(home != null) {
+								p.setCompassTarget(home);
+								sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
+								if(currentTrack != null) {
+									plugin.playerTargets.get(currentTrack).removeTracker(p);
+								}
+								if(plugin.compassInfoPanels.containsKey(p)) {
+									Universe universe = MythicaSpawn.getSpawnManager().getWorldsUniverse(home.getWorld());
+									if(universe == Universe.SURVIVAL) {
+										plugin.compassInfoPanels.get(p).setTargetName("Survival Bed");
+									} else {
+										plugin.compassInfoPanels.get(p).setTargetName("PvP Bed");
+									}
+									plugin.compassInfoPanels.get(p).run();
+								}
+							} else {
+								p.sendMessage(ChatColor.RED + "Home/bed not set!");
+							}
+							return true;
+						case "death":
+							if(death != null) {
+								if(currentTrack != null) {
+									plugin.playerTargets.get(currentTrack).removeTracker(p);
+								}
+								p.setCompassTarget(death);
+								sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
+								if(plugin.compassInfoPanels.containsKey(p)) {
+									plugin.compassInfoPanels.get(p).setTargetName("Last Death");
+									plugin.compassInfoPanels.get(p).run();
+								}
+							} else {
+								sender.sendMessage(ChatColor.RED + "Could not find a previous death.");
+							}
+							return true;
+						case "deathpoint":
+							if(death != null) {
+								if(currentTrack != null) {
+									plugin.playerTargets.get(currentTrack).removeTracker(p);
+								}
+								p.setCompassTarget(death);
+								sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
+								if(plugin.compassInfoPanels.containsKey(p)) {
+									plugin.compassInfoPanels.get(p).setTargetName("Last Death");
+									plugin.compassInfoPanels.get(p).run();
+								}
+							} else {
+								sender.sendMessage(ChatColor.RED + "Could not find a previous death.");
+							}
+							return true;
+						default:
+							//check if arg[1] matches a custom target first
+							Set<String> targets = null;
+							targets = mythian.getCompassTargetNames();
 
-						if(target != null && target.isOnline()) {
-							try {
-								if(VanishNoPacket.isVanished(target.getDisplayName())) {
-									if(!sender.hasPermission("mythica.mod")) {
-										sender.sendMessage(ChatColor.RED + "Player target not available!");
+							if (targets != null) {
+								for (String targetName : targets) {
+									if(targetName.equals(args[1])) {
+										if(currentTrack != null) {
+											plugin.playerTargets.get(currentTrack).removeTracker(p);
+										}
+										Location targetLoc = mythian.getCompassTarget(targetName);
+										p.setCompassTarget(targetLoc);
+										sender.sendMessage(ChatColor.GREEN + "Pointed compass to " + ChatColor.YELLOW + args[1] + ChatColor.GREEN + ".");
+										if(plugin.compassInfoPanels.containsKey(p)) {
+											plugin.compassInfoPanels.get(p).setTargetName(args[1]);
+											plugin.compassInfoPanels.get(p).run();
+										}
 										return true;
+
 									}
 								}
-							} catch (VanishNotLoadedException e) {
-								e.printStackTrace();
 							}
-							if(target.getWorld() != p.getWorld()) {
-								sender.sendMessage(ChatColor.RED + "Cannot point compass to player, target is in a different world!");
+
+							//then check for a playername
+							String playername = completeName(args[1]);
+							if(playername == null) {
+								sender.sendMessage(ChatColor.RED + "Could not find a target for: " + args[1] + ", Check /compass targets");
+								break;
+							}
+
+							if(playername.equals(sender.getName())) {
+								sender.sendMessage(ChatColor.RED + "No need to track yourself!");
 								return true;
 							}
 
-							Player trackingPlayer = Utils.getTrackingPlayer(p);
-							if(trackingPlayer != null) {
-								if(trackingPlayer == target) {
-									sender.sendMessage(ChatColor.RED + "You are already tracking that player!");
-								}
+							final Player target = Bukkit.getPlayer(playername);
+							if(target == null) {
+								sender.sendMessage(ChatColor.RED + "Player is not online!");
+								return true;
 							}
 
-							sender.sendMessage(ChatColor.GREEN + "Sending a request to compass track " + ChatColor.YELLOW + target.getName() + ChatColor.GREEN + "...");
-							if(plugin.trackRequests.containsKey(target)) {
-								plugin.trackRequests.remove(target);
-							}
-							plugin.trackRequests.put(target, p);
-							target.sendMessage(ChatColor.YELLOW + sender.getName() + ChatColor.GREEN + " is requesting to track you with their compass. Reply with " + ChatColor.YELLOW +  "/sure" + ChatColor.GREEN +", " + ChatColor.YELLOW + "/nah" + ChatColor.GREEN + ", or " + ChatColor.YELLOW + "/creep");
-							BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-							scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
-								@Override
-								public void run() {
-									if(plugin.trackRequests.containsKey(target)) {
-										plugin.trackRequests.remove(target);
-										p.sendMessage(ChatColor.GREEN + "No reply. Player track request canceled.");
+							if(target != null && target.isOnline()) {
+								try {
+									if(VanishNoPacket.isVanished(target.getDisplayName())) {
+										if(!sender.hasPermission("mythica.mod")) {
+											sender.sendMessage(ChatColor.RED + "Player target not available!");
+											return true;
+										}
+									}
+								} catch (VanishNotLoadedException e) {
+									e.printStackTrace();
+								}
+								if(target.getWorld() != p.getWorld()) {
+									sender.sendMessage(ChatColor.RED + "Cannot point compass to player, target is in a different world!");
+									return true;
+								}
+
+								Player trackingPlayer = Utils.getTrackingPlayer(p);
+								if(trackingPlayer != null) {
+									if(trackingPlayer == target) {
+										sender.sendMessage(ChatColor.RED + "You are already tracking that player!");
 									}
 								}
-							}, 300L);
-							//sender.sendMessage(ChatColor.GREEN + "Pointed compass to track " + ChatColor.YELLOW + playername + ChatColor.GREEN + ".");
-							//plugin.playerTrackers.put(p, new PlayerTracker(plugin, p, target).runTaskTimer(plugin, 1L, 10L));
-							//playerData.getConfig().set(playerName + ".playerTrack", playername);
-							//playerData.saveConfig();
-							return true;
-						}
+
+								sender.sendMessage(ChatColor.GREEN + "Sending a request to compass track " + ChatColor.YELLOW + target.getName() + ChatColor.GREEN + "...");
+								if(plugin.trackRequests.containsKey(target)) {
+									plugin.trackRequests.remove(target);
+								}
+								plugin.trackRequests.put(target, p);
+								target.sendMessage(ChatColor.YELLOW + sender.getName() + ChatColor.GREEN + " is requesting to track you with their compass. Reply with " + ChatColor.YELLOW +  "/sure" + ChatColor.GREEN +", " + ChatColor.YELLOW + "/nah" + ChatColor.GREEN + ", or " + ChatColor.YELLOW + "/creep");
+								BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+								scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
+									@Override
+									public void run() {
+										if(plugin.trackRequests.containsKey(target)) {
+											plugin.trackRequests.remove(target);
+											p.sendMessage(ChatColor.GREEN + "No reply. Player track request canceled.");
+										}
+									}
+								}, 300L);
+								//sender.sendMessage(ChatColor.GREEN + "Pointed compass to track " + ChatColor.YELLOW + playername + ChatColor.GREEN + ".");
+								//plugin.playerTrackers.put(p, new PlayerTracker(plugin, p, target).runTaskTimer(plugin, 1L, 10L));
+								//playerData.getConfig().set(playerName + ".playerTrack", playername);
+								//playerData.saveConfig();
+								return true;
+							}
 					}
 				}//end of point
 			}//end of args >= 1
@@ -668,57 +669,57 @@ public class CompassTarget implements CommandExecutor {
 
 	public String getWorldName(String input) {
 		switch(input.toLowerCase()) {
-		case "survival":
-		case "survival_main":
-		case "survivalmain":
-		case "therealm":
-		case "the_realm":
-		case "realm":
-			return "survival_main";
-		case "survivaltemp":
-		case "survival_temp":
-			return "survival_temp";
-		case "survival_the_end":
-		case "survival_end":
-		case "survivalend":
-		case "survival_main_the_end":
-			return "survival_main_the_end";
-		case "pvp":
-		case "pvp_main":
-		case "pvpmain":
-		case "thedominion":
-		case "the_dominion":
-		case "dominion":
-			return "pvp_main";
-		case "pvptemp":
-		case "pvp_Temp":
-			return "pvp_temp";
-		case "pvp_the_end":
-		case "pvpend":
-		case "pvp_end":
-		case "pvp_main_the_end":
-			return "pvp_main_the_end";
-		default:
-			return "unknown";
+			case "survival":
+			case "survival_main":
+			case "survivalmain":
+			case "therealm":
+			case "the_realm":
+			case "realm":
+				return "survival_main";
+			case "survivaltemp":
+			case "survival_temp":
+				return "survival_temp";
+			case "survival_the_end":
+			case "survival_end":
+			case "survivalend":
+			case "survival_main_the_end":
+				return "survival_main_the_end";
+			case "pvp":
+			case "pvp_main":
+			case "pvpmain":
+			case "thedominion":
+			case "the_dominion":
+			case "dominion":
+				return "pvp_main";
+			case "pvptemp":
+			case "pvp_Temp":
+				return "pvp_temp";
+			case "pvp_the_end":
+			case "pvpend":
+			case "pvp_end":
+			case "pvp_main_the_end":
+				return "pvp_main_the_end";
+			default:
+				return "unknown";
 		}
 	}
 
 	public String getReadableName(String input) {
 		switch(input.toLowerCase()) {
-		case "survival_main":
-			return "SurvivalMain";
-		case "survival_temp":
-			return "SurvivalTemp";
-		case "survival_main_the_end":
-			return "SurvivalEnd";
-		case "pvp_main":
-			return "PvpMain";
-		case "pvp_temp":
-			return "PvpTemp";
-		case "pvp_main_the_end":
-			return "PvpEnd";
-		default:
-			return "Unknown";
+			case "survival_main":
+				return "SurvivalMain";
+			case "survival_temp":
+				return "SurvivalTemp";
+			case "survival_main_the_end":
+				return "SurvivalEnd";
+			case "pvp_main":
+				return "PvpMain";
+			case "pvp_temp":
+				return "PvpTemp";
+			case "pvp_main_the_end":
+				return "PvpEnd";
+			default:
+				return "Unknown";
 		}
 	}
 }

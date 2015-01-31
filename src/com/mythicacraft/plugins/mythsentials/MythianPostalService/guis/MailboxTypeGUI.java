@@ -64,10 +64,12 @@ public class MailboxTypeGUI implements GUI {
 			pageNumber = totalPages;
 		}
 		int mailIndex = 0 + (27*(pageNumber-1));
+		int invIndex = 0;
 
-		while(mailIndex < 27 * pageNumber && mailIndex < boxSize) {
-			inventory.setItem(mailIndex,createMailButton(mails.get(mailIndex)));
+		while(mailIndex < (27 * pageNumber) && mailIndex < boxSize) {
+			inventory.setItem(invIndex,createMailButton(mails.get(mailIndex)));
 			mailIndex++;
+			invIndex++;
 		}
 
 		ItemStack seperator = GUIUtils.createButton(Material.STONE_BUTTON, ChatColor.STRIKETHROUGH + "---", null);
@@ -88,7 +90,7 @@ public class MailboxTypeGUI implements GUI {
 						Material.IRON_PLATE,
 						ChatColor.GOLD + "Next " + ChatColor.STRIKETHROUGH + "->",
 						Arrays.asList(
-								ChatColor.RED + "Click for" + ChatColor.BOLD + "Next Page"));
+								ChatColor.RED + "Click for" + ChatColor.BOLD + " Next Page"));
 				inventory.setItem(41, next);
 				//next button
 			}
@@ -97,7 +99,7 @@ public class MailboxTypeGUI implements GUI {
 						Material.IRON_PLATE,
 						ChatColor.GOLD +""+ ChatColor.STRIKETHROUGH + "<- " + ChatColor.GOLD + "Previous",
 						Arrays.asList(
-								ChatColor.RED + "Click for" + ChatColor.BOLD + "Previous Page"));
+								ChatColor.RED + "Click for" + ChatColor.BOLD + " Previous Page"));
 				inventory.setItem(39, previous);
 				//previous button
 			}
@@ -127,12 +129,21 @@ public class MailboxTypeGUI implements GUI {
 				}
 				break;
 			default:
-				if(clickedSlot <= 27 && clickedItem != null && clickedItem.getType() != Material.AIR) {
+				if(clickedSlot < 27 && clickedItem != null && clickedItem.getType() != Material.AIR) {
 					int mailIndex = clickedSlot + (27*(pageNumber-1));
+					if(mailbox.getBoxFromType(boxType).size() < mailIndex+1) {
+						whoClicked.closeInventory();
+						whoClicked.sendMessage(ChatColor.RED + "[MPS] Something went wrong! Please try opening mail again. If the issue persists, make an issue on the website. Sorry!");
+						Bukkit.getLogger().warning("[Mythica] " + whoClicked.getName() + " clicked on a " + clickedItem.getType().toString() + " which index (" + mailIndex + ") doesnt exist in their " + boxType.toString() + " mail array!");
+						return;
+					}
 					Mail mail = mailbox.getBoxFromType(boxType).get(mailIndex);
 					if(clickedEvent.getClick() == ClickType.LEFT) {
 						if(boxType == MailboxType.INBOX) {
-
+							whoClicked.closeInventory();
+							whoClicked.sendMessage(this.getReplySummaryString(mail));
+							String command = "tellraw {player} {\"text\":\"\",\"extra\":[{\"text\":\"[MPS] Reply with a (Click one): \",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"\"}},{\"text\":\"Letter, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail letter to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a text-only letter!\",\"color\":\"gold\"}]}}},{\"text\":\"Package, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail package to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a package with the items in your drop box!\",\"color\":\"gold\"}]}}},{\"text\":\"Payment, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail payment to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a money payment!\",\"color\":\"gold\"}]}}},{\"text\":\"Experience\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail xp to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail xp points (not levels) to a player!!\",\"color\":\"gold\"}]}}}]}";
+							Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("{player}", whoClicked.getName()).replace("{to}", mail.getFrom()));
 						}
 					}
 					else if(clickedEvent.getClick() == ClickType.RIGHT) {
@@ -155,7 +166,7 @@ public class MailboxTypeGUI implements GUI {
 									exp.setStatus(MailStatus.CLAIMED);
 									mailbox.updateMailItem(exp, mailIndex, boxType);
 									whoClicked.closeInventory();
-									whoClicked.sendMessage(ChatColor.YELLOW +"[Mythica] " + ChatColor.DARK_AQUA + "You have successfuly claimed the experience!");
+									whoClicked.sendMessage(ChatColor.YELLOW +"[MPS] " + ChatColor.DARK_AQUA + "You have successfuly claimed the experience!");
 								}
 								else if(mail.getType() == MailType.PAYMENT) {
 									Payment payment = (Payment) mail;
@@ -163,7 +174,7 @@ public class MailboxTypeGUI implements GUI {
 									payment.setStatus(MailStatus.CLAIMED);
 									mailbox.updateMailItem(payment, mailIndex, boxType);
 									whoClicked.closeInventory();
-									whoClicked.sendMessage(ChatColor.YELLOW +"[Mythica] " + ChatColor.DARK_AQUA + "You have successfuly claimed the payment!");
+									whoClicked.sendMessage(ChatColor.YELLOW +"[MPS] " + ChatColor.DARK_AQUA + "You have successfuly claimed the payment!");
 								}
 								else if(mail.getType() == MailType.PACKAGE) {
 									GUIManager.getInstance().showGUI(new PackageGUI((PackageObj) mail, mailIndex, boxType, pageNumber), whoClicked);
@@ -172,6 +183,7 @@ public class MailboxTypeGUI implements GUI {
 						}
 					}
 					else if(clickedEvent.getClick() == ClickType.SHIFT_RIGHT) {
+						if((mail.getType() == MailType.PACKAGE || mail.getType() == MailType.PAYMENT || mail.getType() == MailType.EXPERIENCE) && mail.getStatus() != MailStatus.CLAIMED && boxType == MailboxType.INBOX) return;
 						mailbox.deleteMailItem(mailIndex, boxType);
 						clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
 					}
@@ -182,11 +194,41 @@ public class MailboxTypeGUI implements GUI {
 	@Override
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {}
 
+	private String getReplySummaryString(Mail mail) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(ChatColor.YELLOW + "[MPS] " + ChatColor.AQUA + mail.getFrom() + ChatColor.DARK_AQUA + " mailed you ");
+		switch(mail.getType()) {
+			case EXPERIENCE:
+				Experience exp = (Experience) mail;
+				sb.append("an " + ChatColor.AQUA + "Experience Sum" + ChatColor.DARK_AQUA + " of " + ChatColor.AQUA + exp.getExperience() + " xp point(s)" + ChatColor.DARK_AQUA);
+				break;
+			case LETTER:
+				sb.append("a " + ChatColor.AQUA + "Letter" + ChatColor.DARK_AQUA);
+				break;
+			case PACKAGE:
+				PackageObj po = (PackageObj) mail;
+				sb.append("a " + ChatColor.AQUA + "Package" + ChatColor.DARK_AQUA + " containing " + ChatColor.AQUA + po.getItems().size() + " item(s)"  + ChatColor.DARK_AQUA);
+				break;
+			case PAYMENT:
+				Payment payment = (Payment) mail;
+				sb.append("a " + ChatColor.AQUA + "Payment" + ChatColor.DARK_AQUA + " of " + ChatColor.DARK_AQUA + "$" + payment.getPayment() + ChatColor.DARK_AQUA);
+				break;
+		}
+		if(!mail.getMessage().isEmpty()) {
+			sb.append(" with the message: ");
+			sb.append(ChatColor.RESET + "\"" + ChatColor.ITALIC + mail.getMessage() + "\"");
+		}
+		sb.append(ChatColor.DARK_AQUA + " at " + ChatColor.AQUA + mail.getTimeStamp());
+		return sb.toString();
+	}
+
 	private ItemStack createMailButton(Mail mail) {
 
 		ItemStack button = new ItemStack(Material.AIR);
 		List<String> lore = new ArrayList<String>();
 
+		boolean claimed = (mail.getStatus() == MailStatus.CLAIMED);
+		String info = "";
 		switch(mail.getType()) {
 			case LETTER:
 				button = new ItemStack(Material.PAPER);
@@ -194,36 +236,40 @@ public class MailboxTypeGUI implements GUI {
 			case EXPERIENCE:
 				button = new ItemStack(Material.EXP_BOTTLE);
 				Experience exp = (Experience) mail;
-				lore.add(ChatColor.WHITE + "" + exp.getExperience() + " XP Points");
-
+				info = ChatColor.WHITE + "" + exp.getExperience() + " XP Point(s)";
 				break;
 			case PACKAGE:
 				PackageObj po = (PackageObj) mail;
-				lore.add(ChatColor.WHITE + "" + po.getItems().size() + " Required Slots");
+				info = ChatColor.WHITE + "" + po.getItems().size() + " Required Slot(s)";
 				button = new ItemStack(Material.CHEST);
 				break;
 			case PAYMENT:
 				Payment payment = (Payment) mail;
-				lore.add(ChatColor.WHITE + "$" + payment.getPayment());
+				info = ChatColor.WHITE + "$" + payment.getPayment();
 				button = new ItemStack(Material.GOLD_INGOT);
 				break;
 		}
-
-		if(mail.getStatus() == MailStatus.CLAIMED) {
-			lore.add(ChatColor.GRAY + "(Already claimed)");
+		if(claimed) {
+			info = ChatColor.GRAY + "*Claimed*";
+		}
+		if(!info.isEmpty()) {
+			lore.add(info);
 		}
 
 		ItemMeta im = button.getItemMeta();
-		im.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + ChatColor.UNDERLINE + Utils.capitalize(mail.getType().toString().toLowerCase(), null));
+		String name = ChatColor.GOLD + "" + ChatColor.BOLD + Utils.capitalize(mail.getType().toString().toLowerCase(), null);
+		im.setDisplayName(name);
+
+		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
 		if(!mail.getMessage().trim().isEmpty()) {
-			String[] wrappedMessage = Utils.wrap("\"" +mail.getMessage() +"\"", 30, "\n", true).split("\n");
+			String[] wrappedMessage = Utils.wrap("" +mail.getMessage() +"", 30, "\n", true).split("\n");
 			for(String line : wrappedMessage) {
 				lore.add(ChatColor.YELLOW + line);
 			}
 		}
-
-		lore.add(boxType.equals(MailboxType.INBOX) ? ChatColor.GRAY +""+ChatColor.ITALIC+ "from " + mail.getFrom() : ChatColor.GRAY +""+ChatColor.ITALIC+ "to " + mail.getTo());
-		lore.add(ChatColor.GRAY + mail.getTimeStamp());
+		lore.add(boxType.equals(MailboxType.INBOX) ? ChatColor.GRAY +""+ "  from " + ChatColor.WHITE + mail.getFrom() : ChatColor.GRAY + "  to " + ChatColor.WHITE + mail.getTo());
+		lore.add("  " + ChatColor.GRAY + mail.getTimeStamp());
+		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
 		if(boxType.equals(MailboxType.INBOX)) {
 			lore.add(ChatColor.RED + "Left-Click to " + ChatColor.BOLD + "Respond");
 			if(mail.getType() != MailType.LETTER) {
@@ -232,11 +278,19 @@ public class MailboxTypeGUI implements GUI {
 				}
 			}
 		}
-		lore.add(ChatColor.RED + "Shift+Right-Click to " + ChatColor.BOLD + "Delete");
+		if(mail.getType() == MailType.LETTER || mail.getStatus() == MailStatus.CLAIMED || boxType == MailboxType.SENT) {
+			lore.add(ChatColor.RED + "Shift+Right-Click to " + ChatColor.BOLD + "Delete");
+		}
 
 		im.setLore(lore);
 		button.setItemMeta(im);
 		return button;
 
+	}
+
+	@Override
+	public boolean ignoreForeignItems() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

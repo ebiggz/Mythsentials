@@ -18,4 +18,7 @@ public interface GUI {
 	// Do something when a player closes a GUI. It is not possible to cancel this event.
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent);
 
+	// Do something when a player closes a GUI. It is not possible to cancel this event.
+	public boolean ignoreForeignItems();
+
 }

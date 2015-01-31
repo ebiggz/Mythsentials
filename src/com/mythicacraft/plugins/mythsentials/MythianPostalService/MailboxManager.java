@@ -1,7 +1,9 @@
 package com.mythicacraft.plugins.mythsentials.MythianPostalService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,6 +25,7 @@ import com.mythicacraft.plugins.mythsentials.Utilities.ConfigAccessor;
 public class MailboxManager {
 
 	public HashMap<Player,MailboxSelect> mailboxSelectors = new HashMap<Player,MailboxSelect>();
+	public List<Player> willDropBook = new ArrayList<Player>();
 
 	protected MailboxManager() { /*exists to block instantiation*/ }
 	private static MailboxManager instance = null;
@@ -46,6 +49,21 @@ public class MailboxManager {
 		ConfigAccessor mailboxData = new ConfigAccessor("mailbox-locations.yml");
 		return mailboxData.getConfig().contains(this.locationToString(location));
 	}
+
+	public Location[] getMailboxLocations() {
+
+		ConfigAccessor mailboxData = new ConfigAccessor("mailbox-locations.yml");
+		Set<String> keys = mailboxData.getConfig().getKeys(false);
+		Location[] mailboxLocs = new Location[keys.size()];
+
+		int index = 0;
+		for(String locStr : keys) {
+			mailboxLocs[index] = stringToLocation(locStr);
+			index++;
+		}
+		return mailboxLocs;
+	}
+
 
 
 	public String getMailboxOwner(Location loc) {
@@ -105,6 +123,14 @@ public class MailboxManager {
 		mythian.clearMailboxLocs();
 	}
 
+	public boolean mailboxIsNearby(Location location, int distance) {
+		Location[] mailboxes = getMailboxLocations();
+		for(Location mailbox : mailboxes) {
+			if(location.distance(mailbox) < distance) return true;
+		}
+		return false;
+	}
+
 	private boolean canBreakAndPlaceAtLoc(Location loc, Player player) {
 		Block block = loc.getBlock();
 		int spawnRadius = Bukkit.getServer().getSpawnRadius();
@@ -130,11 +156,11 @@ public class MailboxManager {
 	}
 
 	private String locationToString(Location location) {
-		return location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() + "," + location.getWorld();
+		return location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() + "," + location.getWorld().getName();
 	}
 
-	/*private Location stringToLocation(String string) {
+	private Location stringToLocation(String string) {
 		String[] split = string.split(",");
 		return new Location(Bukkit.getWorld(split[3]), Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
-	}*/
+	}
 }

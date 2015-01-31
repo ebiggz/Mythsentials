@@ -59,6 +59,7 @@ import com.mythicacraft.plugins.mythsentials.Dragon.DragonChecker;
 import com.mythicacraft.plugins.mythsentials.Dragon.DragonListener;
 import com.mythicacraft.plugins.mythsentials.Friends.FriendsCmds;
 import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIListener;
+import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIManager;
 import com.mythicacraft.plugins.mythsentials.GUIAPI.GUIUtils;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.ChannelChat;
 import com.mythicacraft.plugins.mythsentials.JsonAPI.HerochatJSONHandler;
@@ -86,6 +87,7 @@ import com.mythicacraft.plugins.mythsentials.MiscListeners.UnregNotifier;
 import com.mythicacraft.plugins.mythsentials.MythianPostalService.MailCommands;
 import com.mythicacraft.plugins.mythsentials.MythianPostalService.MailboxListener;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.BoardListener;
+import com.mythicacraft.plugins.mythsentials.MythiboardAPI.MeCommand;
 import com.mythicacraft.plugins.mythsentials.MythiboardAPI.MythiboardManager;
 import com.mythicacraft.plugins.mythsentials.MythiboardEntries.BankSBEntry;
 import com.mythicacraft.plugins.mythsentials.MythiboardEntries.FriendsSBEntry;
@@ -174,6 +176,8 @@ public class Mythsentials extends JavaPlugin {
 	public void onDisable() {
 
 		IRCBot.getBot().disconnect();
+
+		GUIManager.getInstance().closeAllGUIs();
 
 		log.info("[Mythsentials] Disabled!");
 	}
@@ -265,6 +269,7 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("loginlocation").setExecutor(new AdminTools());
 		getCommand("mobselect").setExecutor(new AdminTools());
 		getCommand("mobtp").setExecutor(new AdminTools());
+		getCommand("test").setExecutor(new AdminTools());
 		getCommand("compass").setExecutor(new CompassTarget(this));
 		getCommand("sure").setExecutor(new CompassTarget(this));
 		getCommand("nah").setExecutor(new CompassTarget(this));
@@ -305,6 +310,7 @@ public class Mythsentials extends JavaPlugin {
 		getCommand("friends").setExecutor(new FriendsCmds());
 		getCommand("mail").setExecutor(new MailCommands());
 		getCommand("mailbox").setExecutor(new MailCommands());
+		getCommand("mystuff").setExecutor(new MeCommand());
 
 		addCensoredWords();
 		addCensoredWordsFunny();
